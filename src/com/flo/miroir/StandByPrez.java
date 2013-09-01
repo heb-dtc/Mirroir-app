@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 
-public class StandByPrez extends Presentation {
+public class StandByPrez extends RemotePresentation {
 
 	private final String TAG = this.getClass().getName();
 
@@ -15,6 +15,8 @@ public class StandByPrez extends Presentation {
 	public StandByPrez(Context outerContext, Display display) {
 		super(outerContext, display);
 		mCtx = outerContext;
+		
+		setName(Utils.standbyPresentationName);
 	}
 	
 	@Override

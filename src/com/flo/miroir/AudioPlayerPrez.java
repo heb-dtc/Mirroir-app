@@ -12,7 +12,7 @@ import android.util.Log;
 import android.view.Display;
 import android.widget.TextView;
 
-public class AudioPlayerPrez extends Presentation{
+public class AudioPlayerPrez extends RemotePresentation{
 	
 	private final String TAG = this.getClass().getName();
 
@@ -30,6 +30,8 @@ public class AudioPlayerPrez extends Presentation{
 	public AudioPlayerPrez(Context outerContext, Display display) {
 		super(outerContext, display);
 		mCtx = outerContext;
+		
+		setName(Utils.musicPresentationName);
 	}
 	
 	@Override

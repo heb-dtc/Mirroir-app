@@ -30,9 +30,6 @@ public class LocalGalleryActivity extends Activity {
 	
 	private final String TAG = this.getClass().getName();
 	
-	private MediaRouter mMediaRouter;
-	private ImagePlayerPrez mImgPrez;
-	
 	private GridView mImgGrid;
 	private ImageAdapter mImgAdpt;
 	
@@ -49,9 +46,7 @@ public class LocalGalleryActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_local_gallery);
 		
-		//get the Media Router Service
-		mMediaRouter = (MediaRouter)getSystemService(Context.MEDIA_ROUTER_SERVICE);
-
+		RemoteDisplayManager.getInstance().displayImagePresentation(this);
 		
 		mImgGrid = (GridView)findViewById(R.id.gridview);
 		
@@ -92,15 +87,13 @@ public class LocalGalleryActivity extends Activity {
     protected void onResume() {
         // Be sure to call the super class.
         super.onResume();
-
-        // Listen for changes to media routes.
-        mMediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, mMediaRouterCallback);
     }
 	
     @Override
     protected void onPause() {
     	super.onPause();
-    	mMediaRouter.removeCallback(mMediaRouterCallback);
+    	
+    	RemoteDisplayManager.getInstance().hideImagePresentation();
     }
     
 	protected void onDestroy() {  
@@ -112,7 +105,7 @@ public class LocalGalleryActivity extends Activity {
         for (int i = 0; i < count; i++) {  
             v = (ImageView) grid.getChildAt(i);  
             ((BitmapDrawable) v.getDrawable()).setCallback(null);  
-        }  
+        }
     }  
 	
 	@Override
@@ -120,10 +113,11 @@ public class LocalGalleryActivity extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		
-        MenuItem mediaRouteMenuItem = menu.findItem(R.id.menu_media_route);
+        /*MenuItem mediaRouteMenuItem = menu.findItem(R.id.menu_media_route);
         MediaRouteActionProvider mediaRouteActionProvider = (MediaRouteActionProvider)mediaRouteMenuItem.getActionProvider();
         mediaRouteActionProvider.setRouteTypes(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
-
+        */
+		
 		return true;
 	}
 
@@ -307,65 +301,7 @@ public class LocalGalleryActivity extends Activity {
 		}
 	}
 	
-	/**
-	 * 
-	 * MEDIA ROUTER RELATED METHODS
-	 * 
-	 */
-	private final MediaRouter.SimpleCallback mMediaRouterCallback =
-		    new MediaRouter.SimpleCallback() {
-		        @Override
-		        public void onRouteSelected(MediaRouter router, int type, MediaRouter.RouteInfo info) {
-		            Log.d(TAG, "onRouteSelected: type=" + type + ", info=" + info);
-		        }
-		
-		        @Override
-		        public void onRouteUnselected(MediaRouter router, int type, MediaRouter.RouteInfo info) {
-		            Log.d(TAG, "onRouteUnselected: type=" + type + ", info=" + info);
-		        }
-		
-		        @Override
-		        public void onRoutePresentationDisplayChanged(MediaRouter router, MediaRouter.RouteInfo info) {
-		            Log.d(TAG, "onRoutePresentationDisplayChanged: info=" + info);
-		            
-		            if(info.getPlaybackType() == MediaRouter.RouteInfo.PLAYBACK_TYPE_LOCAL){
-		            }
-		            else{
-		            	//if remote and if the prez is not shown 
-		            	//it means the prez should be loaded
-		            	if(!mShowingPrez){
-		            		startImagePlayerPresentation(); 
-		            		mShowingPrez = true;
-		            	}
-		            	else{
-		            		mShowingPrez = false;
-		            	}
-		            }
-		        }
-	};
-	
-	private void startImagePlayerPresentation(){
-		Log.d(TAG, "startImagePlayerPresentation");
-		
-		// Get the current route and its presentation display.
-        MediaRouter.RouteInfo route = mMediaRouter.getSelectedRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
-  
-        if (route != null) {
-        	Display presentationDisplay = route.getPresentationDisplay();
-        	if (presentationDisplay != null) {
-        		//create the prez
-        		mImgPrez = new ImagePlayerPrez(this, presentationDisplay);
-        		
-        		//show it
-        		mImgPrez.show();
-        	}
-        }
-	}
-	
 	private void updatePrezImg(String imagePath) {
-		Log.d(TAG, "updatePrezImg");
-		if(mImgPrez != null){
-			mImgPrez.setImage(imagePath);
-		}
+		RemoteDisplayManager.getInstance().updateImagePlayerPresentation(imagePath);
 	}
 }

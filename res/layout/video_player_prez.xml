@@ -4,18 +4,27 @@
     android:layout_height="fill_parent"
     android:background="@android:color/transparent" >
     
+    <ImageView 
+        android:id="@+id/image_view"
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:src="@drawable/stand_by"
+        />
+    
     <TextView 
         android:id="@+id/video_name_view"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:layout_centerHorizontal="true"
-        android:text="No Name..."/>
+        android:text="No Name..."
+        android:visibility="gone"/>
     
     <VideoView
 	        android:id="@+id/videoView"
 	        android:layout_width="fill_parent"
 	        android:layout_height="fill_parent"
 	        android:layout_below="@id/video_name_view"
-	        android:layout_centerInParent="true" />
+	        android:layout_centerInParent="true"
+	        android:visibility="gone" />
 
 </RelativeLayout>

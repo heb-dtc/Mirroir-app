@@ -7,10 +7,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.VideoView;
 
-public class VideoPlayerPrez extends Presentation {
+public class VideoPlayerPrez extends RemotePresentation {
 
 	private final String TAG = this.getClass().getName();
 	
@@ -18,6 +20,7 @@ public class VideoPlayerPrez extends Presentation {
 	private Context mCtx;
 	private TextView mVideoNameView;
 	private VideoView mVideoView;
+	private ImageView mImageView;
 	
 	private PlayerAsyncTask mPlayerAsyncTask;
 	
@@ -33,10 +36,13 @@ public class VideoPlayerPrez extends Presentation {
         Log.e(TAG, "Create Video prez");
 		super.onCreate(savedInstanceState);
 		
+		setName(Utils.videoPresentationName);
+		
 		setContentView(R.layout.video_player_prez);
 		
 		mVideoView = (VideoView) findViewById(R.id.videoView);
 		mVideoNameView = (TextView) findViewById(R.id.video_name_view);
+		mImageView = (ImageView) findViewById(R.id.image_view);
 	}
 	
 	@Override
@@ -56,9 +62,16 @@ public class VideoPlayerPrez extends Presentation {
 	
 	private void startPlayer(){
 		if(mVideoView != null && mCurrentContent != null){
+			
 			Log.e(TAG, "Start video playback");
 			mVideoView.setVideoPath(mCurrentContent.getFilePath());
 			mVideoNameView.setText(mCurrentContent.getTitle());
+
+			mImageView.setVisibility(View.GONE);
+			mVideoView.setVisibility(View.VISIBLE);
+			mVideoNameView.setVisibility(View.VISIBLE);
+			
+			
 			mVideoView.start();
 		}
 	}
@@ -66,6 +79,11 @@ public class VideoPlayerPrez extends Presentation {
 	private void stopPlayer(){
 		if(mVideoView != null && mVideoView.isPlaying()){
 			mVideoView.stopPlayback();
+			
+			mImageView.setVisibility(View.VISIBLE);
+			mVideoView.setVisibility(View.GONE);
+			mVideoNameView.setVisibility(View.GONE);
+			
 		}
 	}
 	

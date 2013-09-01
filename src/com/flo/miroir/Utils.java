@@ -4,6 +4,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 public class Utils {
+	public static String LocalRouteName = "Phone";
+	
+	public static String imagePresentationName = "ImagePresentation";
+	public static String videoPresentationName = "VideoPresentation";
+	public static String musicPresentationName = "MusicPresentation";
+	public static String standbyPresentationName = "StandByPresentation";
 	
 	public static Bitmap decodeSampledBitmapFromUri(String path, int reqWidth, int reqHeight) {
 		   

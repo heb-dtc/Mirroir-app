@@ -14,7 +14,7 @@ import android.util.Log;
 import android.view.Display;
 import android.widget.ImageView;
 
-public class ImagePlayerPrez extends Presentation {
+public class ImagePlayerPrez extends RemotePresentation {
 	
 	private final String TAG = this.getClass().getName();
 
@@ -29,6 +29,8 @@ public class ImagePlayerPrez extends Presentation {
 		mCtx = outerContext;
 		mDisplay = display;
 		mDisplay.getMetrics(mDispMetrics);
+		
+		setName(Utils.imagePresentationName);
 	}
 	
 	@Override
@@ -38,7 +40,7 @@ public class ImagePlayerPrez extends Presentation {
 		super.onCreate(savedInstanceState);
 
         setContentView(R.layout.image_player_prez);
-        mImgView = (ImageView)findViewById(R.id.image_view); 
+        mImgView = (ImageView)findViewById(R.id.image_view);
 	}
 	
 	@Override

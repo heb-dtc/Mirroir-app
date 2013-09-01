@@ -34,9 +34,6 @@ public class LocalVideoActivity extends Activity{
 
 	private final String TAG = this.getClass().getName();
 	
-	private MediaRouter mMediaRouter;
-	private VideoPlayerPrez mVideoPrez;
-	
 	private ListView mListView = null;
 	private View mPlaybakControlView = null;
 	private Button mPlayButton;
@@ -58,7 +55,7 @@ public class LocalVideoActivity extends Activity{
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_local_video);
         
-        mMediaRouter = (MediaRouter)getSystemService(Context.MEDIA_ROUTER_SERVICE);
+        RemoteDisplayManager.getInstance().displayVideoPresentation(this);
         
         mListView = (ListView)findViewById(R.id.list_view);
         mPlaybakControlView = (View) findViewById(R.id.playback_controls_view);
@@ -78,15 +75,12 @@ public class LocalVideoActivity extends Activity{
     protected void onResume() {
         // Be sure to call the super class.
         super.onResume();
-
-        // Listen for changes to media routes.
-        mMediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, mMediaRouterCallback);
     }
 	
     @Override
     protected void onPause() {
     	super.onPause();
-    	mMediaRouter.removeCallback(mMediaRouterCallback);
+    	RemoteDisplayManager.getInstance().hideVideoPlayerPresentation();
     }
     
     @Override
@@ -99,10 +93,10 @@ public class LocalVideoActivity extends Activity{
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         
-        MenuItem mediaRouteMenuItem = menu.findItem(R.id.menu_media_route);
+        /*MenuItem mediaRouteMenuItem = menu.findItem(R.id.menu_media_route);
         MediaRouteActionProvider mediaRouteActionProvider = (MediaRouteActionProvider)mediaRouteMenuItem.getActionProvider();
         mediaRouteActionProvider.setRouteTypes(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
-        
+        */
 		return true;
     }
     
@@ -124,16 +118,14 @@ public class LocalVideoActivity extends Activity{
     	mPlayButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(mVideoPrez != null){
-					mVideoPrez.pauseVideoPlayer();
-				}
+				RemoteDisplayManager.getInstance().pauseVideoPlayer();
 			}
 		});
     	
     	mStopButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				mVideoPrez.stopVideoPlayer();
+				RemoteDisplayManager.getInstance().stopVideoPlayer();
 			}
 		});
     	
@@ -186,16 +178,14 @@ public class LocalVideoActivity extends Activity{
 	
     private void updateVideoPrez(int position){
     	Log.d(TAG, "updateVideoPrez: " + position);
-    	
-		if(mVideoPrez != null){
-			if(position >= 0 && position < mVideoDetailsList.size()){
-				ContentDetails item = mVideoDetailsList.get(position);
-				mCurrentPosInList = position;
-				mVideoPrez.startVideoPlayer(item);
+
+		if(position >= 0 && position < mVideoDetailsList.size()){
+			ContentDetails item = mVideoDetailsList.get(position);
+			mCurrentPosInList = position;
+			RemoteDisplayManager.getInstance().updateVideoPlayerPresentation(item);
 				
-				//add playback controls to UI
-				mPlaybakControlView.setVisibility(View.VISIBLE);
-			}
+			//add playback controls to UI
+			mPlaybakControlView.setVisibility(View.VISIBLE);
 		}
     }
     
@@ -376,71 +366,4 @@ public class LocalVideoActivity extends Activity{
 			return contentRow;
 		}
     }
-	
-	/**
-	 * 
-	 * MEDIA ROUTER RELATED METHODS
-	 * 
-	 */
-	
-	private void startVideoPlayerPresentation(){
-		Log.d(TAG, "startVideoPlayerPresentation");
-		
-		// Get the current route and its presentation display.
-        MediaRouter.RouteInfo route = mMediaRouter.getSelectedRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
-  
-        if (route != null) {
-        	Display presentationDisplay = route.getPresentationDisplay();
-        	if (presentationDisplay != null) {
-        		//create the prez
-        		mVideoPrez = new VideoPlayerPrez(this, presentationDisplay);
-        		
-        		//show it
-        		mVideoPrez.show();
-        	}
-        }
-	}
-	
-	private final MediaRouter.SimpleCallback mMediaRouterCallback =
-		    new MediaRouter.SimpleCallback() {
-		        @Override
-		        public void onRouteSelected(MediaRouter router, int type, MediaRouter.RouteInfo info) {
-		            Log.e(TAG, "onRouteSelected: type=" + type + ", info=" + info);
-		            if(info.getPlaybackType() == MediaRouter.RouteInfo.PLAYBACK_TYPE_LOCAL){
-		            }
-		            else{
-		            }
-		        }
-		
-		        @Override
-		        public void onRouteUnselected(MediaRouter router, int type, MediaRouter.RouteInfo info) {
-		            Log.e(TAG, "onRouteUnselected: type=" + type + ", info=" + info);
-		            if(info.getPlaybackType() == MediaRouter.RouteInfo.PLAYBACK_TYPE_LOCAL){
-		            }
-		            else{
-		            }
-		        }
-		
-		        @Override
-		        public void onRoutePresentationDisplayChanged(MediaRouter router, MediaRouter.RouteInfo info) {
-		            Log.e(TAG, "onRoutePresentationDisplayChanged: info=" + info);
-		            if(info.getPlaybackType() == MediaRouter.RouteInfo.PLAYBACK_TYPE_LOCAL){
-		            }
-		            else{
-		            	//if remote and if the prez is not shown 
-		            	//it means the prez should be loaded
-		            	if(!mShowingPrez){
-		            		startVideoPlayerPresentation();
-		            		mShowingPrez = true;
-		            	}
-		            	else{
-		            		mShowingPrez = false;
-		            		
-		            		//update UI
-		            		mPlaybakControlView.setVisibility(View.GONE);
-		            	}
-		            }
-		        }
-	};
-    
 }

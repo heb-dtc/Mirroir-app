@@ -29,15 +29,23 @@ public class MainActivity extends Activity {
 	private Button mStartLocalGallleryBtn;
 	private Button mStartLocalVideoBtn;
 	
+	private boolean tmp = false;
+
+	private StandByPrez mPrex;
+
+	private AudioPlayerPrez aprex;
+	
 	//private final SparseArray<Presentation> mActivePresentations = new SparseArray<Presentation>();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+		
+		RemoteDisplayManager.getInstance().initializeRemoteDisplayManager(this);
+		
 		//get the Media Router Service
-		mMediaRouter = (MediaRouter)getSystemService(Context.MEDIA_ROUTER_SERVICE);
+		//mMediaRouter = (MediaRouter)getSystemService(Context.MEDIA_ROUTER_SERVICE);
 		
 		mStartRadioPrezBtn = (Button)findViewById(R.id.start_radio_button);
 		mStartLocalGallleryBtn = (Button)findViewById(R.id.start_local_gallery_button);
@@ -53,7 +61,8 @@ public class MainActivity extends Activity {
 		mStartRadioPrezBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				startLocalMusicView();
+				//startLocalMusicView();
+				startAudioPlayerPresentation();
 			}
 		});
 		
@@ -64,7 +73,7 @@ public class MainActivity extends Activity {
 			}
 		});
 		
-		sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())));
+		//sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())));
 	}
 
     @Override
@@ -73,7 +82,7 @@ public class MainActivity extends Activity {
         super.onResume();
 
         // Listen for changes to media routes.
-        mMediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, mMediaRouterCallback);
+        //mMediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, mMediaRouterCallback);
         //mMediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_AUDIO, mMediaRouterCallback);
     }
     
@@ -81,7 +90,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
     	// TODO Auto-generated method stub
     	super.onPause();
-    	mMediaRouter.removeCallback(mMediaRouterCallback);
+    	//mMediaRouter.removeCallback(mMediaRouterCallback);
     }
 	
 	@Override
@@ -112,19 +121,44 @@ public class MainActivity extends Activity {
 	private void startAudioPlayerPresentation(){
 		Log.d(TAG, "startAudioPlayerPresentation");
 		
+		if(!tmp){
+			RemoteDisplayManager.getInstance().displayStandByPresentation(this);
+			tmp = true;
+		}
+		else{
+			RemoteDisplayManager.getInstance().displayAudioPresentation(this);
+			tmp = false;
+		}
+		
 		// Get the current route and its presentation display.
-        MediaRouter.RouteInfo route = mMediaRouter.getSelectedRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
+        /*MediaRouter.RouteInfo route = mMediaRouter.getSelectedRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
   
         if (route != null) {
         	Display presentationDisplay = route.getPresentationDisplay();
         	if (presentationDisplay != null) {
-        		//create the prez
-        		mAudioPrez = new AudioPlayerPrez(this, presentationDisplay);
-        		
-        		//show it
-        		mAudioPrez.show();
+        		if(!tmp){
+	        		//create the prez
+	        		mPrex = new StandByPrez(this, presentationDisplay);
+	        		
+	        		//show it
+	        		mPrex.show();
+	        		
+	        		if(aprex != null){
+	        			aprex.cancel();
+	        		}
+	        		tmp = true;
+        		}else{
+        			//create the prez
+	        		aprex = new AudioPlayerPrez(this, presentationDisplay);
+	        		
+	        		//show it
+	        		aprex.show();
+	        		mPrex.cancel();
+	        		
+	        		tmp=false;
+        		}
         	}
-        }
+        }*/
 	}
 	
 	private void startDisplayListView(){
