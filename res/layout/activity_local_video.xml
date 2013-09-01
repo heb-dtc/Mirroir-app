@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+   	<LinearLayout
+	    android:id="@+id/playback_controls_view"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentBottom="true"
+	    android:background="@android:color/background_dark"
+	    android:orientation="horizontal" >
+    
+	    <Button 
+	        android:id="@+id/btn_previous_video"
+	        android:layout_height="match_parent"
+	        android:layout_width="wrap_content"
+	        android:layout_weight="4"
+	        android:text="Pr."/>
+	   	
+	   	<Button 
+	        android:id="@+id/btn_play_video"
+	        android:layout_height="match_parent"
+	        android:layout_width="wrap_content"
+	        android:layout_weight="4"
+	        android:text="Pl."/>
+	   	
+	   	<Button 
+	        android:id="@+id/btn_stop_video"
+	        android:layout_height="match_parent"
+	        android:layout_width="wrap_content"
+	        android:layout_weight="4"
+	        android:text="St."/>
+	   		  	
+	  	<Button 
+	        android:id="@+id/btn_next_video"
+	        android:layout_height="match_parent"
+	        android:layout_width="wrap_content"
+	        android:layout_weight="4"
+	        android:text="Nx."/>
+	  	
+	</LinearLayout>
+    
+	<ListView
+	    android:id="@+id/list_view" 
+	    android:layout_above="@id/playback_controls_view"
+	    android:layout_width="wrap_content" 
+	    android:layout_height="match_parent"
+		/>
+
+</RelativeLayout>
