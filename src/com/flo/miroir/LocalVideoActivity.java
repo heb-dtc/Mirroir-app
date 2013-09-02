@@ -2,6 +2,7 @@ package com.flo.miroir;
 
 import java.util.ArrayList;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
@@ -49,6 +50,9 @@ public class LocalVideoActivity extends Activity{
         
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_local_video);
+        
+        ActionBar actionBar = getActionBar();
+	    actionBar.setDisplayHomeAsUpEnabled(true);
 
         mListView = (ListView)findViewById(R.id.list_view);
         mPlaybakControlView = (View) findViewById(R.id.playback_controls_view);
@@ -68,13 +72,13 @@ public class LocalVideoActivity extends Activity{
     protected void onResume() {
         // Be sure to call the super class.
         super.onResume();
-        RemoteDisplayManager.getInstance().displayVideoPresentation(this);
+        RemoteDisplayManager.INSTANCE.displayVideoPresentation(this);
     }
 	
     @Override
     protected void onPause() {
     	super.onPause();
-    	RemoteDisplayManager.getInstance().hideVideoPlayerPresentation();
+    	RemoteDisplayManager.INSTANCE.hideVideoPlayerPresentation();
     }
     
     @Override
@@ -112,14 +116,14 @@ public class LocalVideoActivity extends Activity{
     	mPlayButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				RemoteDisplayManager.getInstance().pauseVideoPlayer();
+				RemoteDisplayManager.INSTANCE.pauseVideoPlayer();
 			}
 		});
     	
     	mStopButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				RemoteDisplayManager.getInstance().stopVideoPlayer();
+				RemoteDisplayManager.INSTANCE.stopVideoPlayer();
 			}
 		});
     	
@@ -176,7 +180,7 @@ public class LocalVideoActivity extends Activity{
 		if(position >= 0 && position < mVideoDetailsList.size()){
 			ContentDetails item = mVideoDetailsList.get(position);
 			mCurrentPosInList = position;
-			RemoteDisplayManager.getInstance().updateVideoPlayerPresentation(item);
+			RemoteDisplayManager.INSTANCE.updateVideoPlayerPresentation(item);
 				
 			//add playback controls to UI
 			mPlaybakControlView.setVisibility(View.VISIBLE);

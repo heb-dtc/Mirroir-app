@@ -8,11 +8,10 @@ import android.media.MediaRouter.RouteInfo;
 import android.util.Log;
 import android.view.Display;
 
-public class RemoteDisplayManager {
+public enum RemoteDisplayManager {
+	INSTANCE;
 
 	private final String TAG = this.getClass().getName();
-	
-	private static RemoteDisplayManager mInstance;
 	
 	//private Context mContext;
 	private MediaRouter mMediaRouter;
@@ -22,11 +21,13 @@ public class RemoteDisplayManager {
 	
 	private ArrayList<IRemoteDisplayCallbacks> mSubscriberList;
 	
-	public RemoteDisplayManager(){
+	 /*RemoteDisplayManager(){
 		mSubscriberList = new ArrayList<IRemoteDisplayCallbacks>();
-	}
+	}*/
 	
 	public void initializeRemoteDisplayManager(Context c){
+		mSubscriberList = new ArrayList<IRemoteDisplayCallbacks>();
+		
 		//get Media Router hooks
 		mMediaRouter = (MediaRouter) c.getSystemService(Context.MEDIA_ROUTER_SERVICE);
 		mMediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, mMediaRouterCallback);
@@ -36,12 +37,12 @@ public class RemoteDisplayManager {
 		mCurrentRouteSelected = mMediaRouter.getSelectedRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
 	}
 	
-	public static RemoteDisplayManager getInstance(){
+	/*public static RemoteDisplayManager getInstance(){
 		if(mInstance == null){
 			mInstance = new RemoteDisplayManager();
 		}
 		return mInstance;
-	}
+	}*/
 	
 	public void subscribeToCallabcks(IRemoteDisplayCallbacks listener){
 		mSubscriberList.add(listener);

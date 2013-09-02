@@ -2,6 +2,7 @@ package com.flo.miroir;
 
 import java.util.ArrayList;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
@@ -37,6 +38,9 @@ public class LocalGalleryActivity extends Activity {
 		
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_local_gallery);
+		
+		ActionBar actionBar = getActionBar();
+	    actionBar.setDisplayHomeAsUpEnabled(true);
 
 		mImgGrid = (GridView)findViewById(R.id.gridview);
 		
@@ -77,14 +81,14 @@ public class LocalGalleryActivity extends Activity {
     protected void onResume() {
         // Be sure to call the super class.
         super.onResume();
-        RemoteDisplayManager.getInstance().displayImagePresentation(this);
+        RemoteDisplayManager.INSTANCE.displayImagePresentation(this);
     }
 	
     @Override
     protected void onPause() {
     	super.onPause();
     	
-    	RemoteDisplayManager.getInstance().hideImagePresentation();
+    	RemoteDisplayManager.INSTANCE.hideImagePresentation();
     }
     
 	protected void onDestroy() {  
@@ -293,6 +297,6 @@ public class LocalGalleryActivity extends Activity {
 	}
 	
 	private void updatePrezImg(String imagePath) {
-		RemoteDisplayManager.getInstance().updateImagePlayerPresentation(imagePath);
+		RemoteDisplayManager.INSTANCE.updateImagePlayerPresentation(imagePath);
 	}
 }

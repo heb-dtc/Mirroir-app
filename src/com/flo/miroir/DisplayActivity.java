@@ -1,5 +1,6 @@
 package com.flo.miroir;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
@@ -37,7 +38,7 @@ public class DisplayActivity extends Activity {
 
 				@Override
 				public void onRoutePresentationDisplayChanged(MediaRouter router, RouteInfo info) {
-					if(!info.getName().equals(RemoteDisplayManager.getInstance().getLocalRouteName())){
+					if(!info.getName().equals(RemoteDisplayManager.INSTANCE.getLocalRouteName())){
 						setProgressBarIndeterminateVisibility(false);
 						showStandByPrez();
 						mDisplayListAdapter.updateContents();
@@ -51,6 +52,9 @@ public class DisplayActivity extends Activity {
         
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_display_list);
+        
+		ActionBar actionBar = getActionBar();
+	    actionBar.setDisplayHomeAsUpEnabled(true);
 
         mDisplayListAdapter = new DisplayListAdapter(this);
         mListView = (ListView)findViewById(R.id.display_list_view);
@@ -62,16 +66,16 @@ public class DisplayActivity extends Activity {
     protected void onResume() {
         super.onResume();
         mDisplayListAdapter.updateContents();
-        RemoteDisplayManager.getInstance().subscribeToCallabcks(mMediaRouterCallbacks);
+        RemoteDisplayManager.INSTANCE.subscribeToCallabcks(mMediaRouterCallbacks);
         
-        RemoteDisplayManager.getInstance().displayStandByPresentation(this);
+        RemoteDisplayManager.INSTANCE.displayStandByPresentation(this);
     }
     
     @Override
     protected void onPause() {
     	super.onPause();
-    	RemoteDisplayManager.getInstance().unsubscribeToCallbacks(mMediaRouterCallbacks);
-    	RemoteDisplayManager.getInstance().hideStandByPresentation();
+    	RemoteDisplayManager.INSTANCE.unsubscribeToCallbacks(mMediaRouterCallbacks);
+    	RemoteDisplayManager.INSTANCE.hideStandByPresentation();
     }
     
     private OnItemClickListener displayListListener = new OnItemClickListener() {
@@ -85,12 +89,12 @@ public class DisplayActivity extends Activity {
     
 	private void makeConnection(RouteInfo info){
 		setProgressBarIndeterminateVisibility(true);   
-		RemoteDisplayManager.getInstance().selectRoute(info);
+		RemoteDisplayManager.INSTANCE.selectRoute(info);
 	}
 	
 	private void showStandByPrez(){
 		Log.d(TAG, "showStandByPrez");
-		RemoteDisplayManager.getInstance().displayStandByPresentation(this);
+		RemoteDisplayManager.INSTANCE.displayStandByPresentation(this);
 	}
     
     private final class DisplayListAdapter extends ArrayAdapter<RouteInfo> {
@@ -116,9 +120,9 @@ public class DisplayActivity extends Activity {
             TextView tv = (TextView)v.findViewById(R.id.display_title);
             tv.setText(info.getName());
             
-            if(RemoteDisplayManager.getInstance().isLocalRoute(info))
+            if(RemoteDisplayManager.INSTANCE.isLocalRoute(info))
             	tv.setTextColor(Color.parseColor("#cc0066"));
-            else if(RemoteDisplayManager.getInstance().isCurrentRoute(info))
+            else if(RemoteDisplayManager.INSTANCE.isCurrentRoute(info))
             	tv.setTextColor(Color.parseColor("#4f9b7a"));
 
             //CAPABILITIES
@@ -139,7 +143,7 @@ public class DisplayActivity extends Activity {
         
         public void updateContents() {
             clear();
-            addAll(RemoteDisplayManager.getInstance().getAllRoutes());
+            addAll(RemoteDisplayManager.INSTANCE.getAllRoutes());
         }
     }
 }

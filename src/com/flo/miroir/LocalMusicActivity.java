@@ -2,12 +2,15 @@ package com.flo.miroir;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -51,6 +54,9 @@ public class LocalMusicActivity extends Activity{
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_local_video);
         
+        ActionBar actionBar = getActionBar();
+	    actionBar.setDisplayHomeAsUpEnabled(true);
+        
         mListView = (ListView)findViewById(R.id.list_view);
         mPlaybakControlView = (View) findViewById(R.id.playback_controls_view);
         mPlayButton = (Button) findViewById(R.id.btn_play_video);
@@ -69,13 +75,13 @@ public class LocalMusicActivity extends Activity{
 	    protected void onResume() {
 	        // Be sure to call the super class.
 	        super.onResume();
-	        RemoteDisplayManager.getInstance().displayAudioPresentation(this);
+	        RemoteDisplayManager.INSTANCE.displayAudioPresentation(this);
 	    }
 		
 	    @Override
 	    protected void onPause() {
 	    	super.onPause();
-	    	RemoteDisplayManager.getInstance().hideAudioPlayerPresentation();
+	    	RemoteDisplayManager.INSTANCE.hideAudioPlayerPresentation();
 	    }
 	    
 	    @Override
@@ -113,14 +119,14 @@ public class LocalMusicActivity extends Activity{
 	    	mPlayButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					RemoteDisplayManager.getInstance().pauseAudioPlayer();
+					RemoteDisplayManager.INSTANCE.pauseAudioPlayer();
 				}
 			});
 	    	
 	    	mStopButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					RemoteDisplayManager.getInstance().stopAudioPlayer();
+					RemoteDisplayManager.INSTANCE.stopAudioPlayer();
 				}
 			});
 	    	
@@ -177,7 +183,7 @@ public class LocalMusicActivity extends Activity{
 			if(position >= 0 && position < mAudioDetailsList.size()){
 				ContentDetails item = mAudioDetailsList.get(position);
 				mCurrentPosInList = position;
-				RemoteDisplayManager.getInstance().updateAudioPlayerPresentation(item);
+				RemoteDisplayManager.INSTANCE.updateAudioPlayerPresentation(item);
 				
 				//add playback controls to UI
 				mPlaybakControlView.setVisibility(View.VISIBLE);
@@ -222,7 +228,11 @@ public class LocalMusicActivity extends Activity{
 						
 						Bitmap bitmap;
 						try {
-							bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), artworkUri);
+							InputStream in = null;
+				            in = getContentResolver().openInputStream(artworkUri);
+				            bitmap = BitmapFactory.decodeStream(in);
+							//bitmap = MediaStore.Audio.Media.getBitmap(getContentResolver(), artworkUri);
+							//bitmap
 							if(bitmap != null){
 								Log.v("collectLocalAudioAlbumsInfo", "bitmap set ");
 		                    	info.setThumbnail(bitmap);
@@ -283,7 +293,8 @@ public class LocalMusicActivity extends Activity{
 	        	
 	        	collectLocalAudioAlbumsInfo();
 	        	
-	        	mCursorAudioStore = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mAudioMediaColumns, null, null, null);
+	        	mCursorAudioStore = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mAudioMediaColumns, 
+	        			MediaStore.Audio.Media.IS_MUSIC + "=1", null, null);
 	        	if (mCursorAudioStore.moveToFirst()) {
 	        		do {
 	        			//get local media info

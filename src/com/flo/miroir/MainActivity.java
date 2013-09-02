@@ -1,5 +1,6 @@
 package com.flo.miroir;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,7 +25,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		RemoteDisplayManager.getInstance().initializeRemoteDisplayManager(this);
+		RemoteDisplayManager.INSTANCE.initializeRemoteDisplayManager(this);
 
 		mStartRadioPrezBtn = (Button)findViewById(R.id.start_radio_button);
 		mStartLocalGallleryBtn = (Button)findViewById(R.id.start_local_gallery_button);
@@ -58,16 +59,14 @@ public class MainActivity extends Activity {
 				startDisplayListView();
 			}
 		});
-		
-		//sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())));
 	}
 
     @Override
     protected void onResume() {
         super.onResume();
         
-        if(RemoteDisplayManager.getInstance().isConnectedToRemoteDisplay()){
-        	RemoteDisplayManager.getInstance().displayStandByPresentation(this);
+        if(RemoteDisplayManager.INSTANCE.isConnectedToRemoteDisplay()){
+        	RemoteDisplayManager.INSTANCE.displayStandByPresentation(this);
         	
         	//Enable UI
         	mStartRadioPrezBtn.setEnabled(true);
@@ -86,14 +85,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
     	super.onPause();
-    	RemoteDisplayManager.getInstance().hideStandByPresentation();
+    	RemoteDisplayManager.INSTANCE.hideStandByPresentation();
     }
     
     @Override
     protected void onDestroy() {
     	// TODO Auto-generated method stub
     	super.onDestroy();
-    	RemoteDisplayManager.getInstance().shutDown();
+    	RemoteDisplayManager.INSTANCE.shutDown();
     }
 	
 	@Override
