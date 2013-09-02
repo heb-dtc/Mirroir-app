@@ -3,21 +3,17 @@ package com.flo.miroir;
 import java.util.ArrayList;
 
 import android.app.Activity;
-import android.app.MediaRouteActionProvider;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
-import android.media.MediaRouter;
 import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -46,7 +42,6 @@ public class LocalVideoActivity extends Activity{
 	private ArrayList<ContentDetails> mVideoDetailsList = null;
 	
 	private int mCurrentPosInList = -1;
-	private boolean mShowingPrez = false;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,9 +49,7 @@ public class LocalVideoActivity extends Activity{
         
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_local_video);
-        
-        RemoteDisplayManager.getInstance().displayVideoPresentation(this);
-        
+
         mListView = (ListView)findViewById(R.id.list_view);
         mPlaybakControlView = (View) findViewById(R.id.playback_controls_view);
         mPlayButton = (Button) findViewById(R.id.btn_play_video);
@@ -75,6 +68,7 @@ public class LocalVideoActivity extends Activity{
     protected void onResume() {
         // Be sure to call the super class.
         super.onResume();
+        RemoteDisplayManager.getInstance().displayVideoPresentation(this);
     }
 	
     @Override
@@ -102,7 +96,7 @@ public class LocalVideoActivity extends Activity{
     
     private OnItemClickListener mListItemClickListener = new OnItemClickListener(){
 		@Override
-		public void onItemClick(AdapterView parent, View v, int position, long id) {
+		public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 			updateVideoPrez(position);
 		}
     };
@@ -242,7 +236,6 @@ public class LocalVideoActivity extends Activity{
 			if(bitmap != null){
 				info.setThumbnail(ThumbnailUtils.extractThumbnail(bitmap, 128, 100, ThumbnailUtils.OPTIONS_RECYCLE_INPUT));
 			}
-			
 		}
 		catch (IllegalArgumentException ex) {
         } 
@@ -337,7 +330,7 @@ public class LocalVideoActivity extends Activity{
 			final View contentRow;
 			
 			if (convertView == null){
-				contentRow = inflater.inflate(R.layout.video_list_row, null);
+				contentRow = inflater.inflate(R.layout.row_video_list, null);
 			}
 			else{
 				contentRow = convertView;

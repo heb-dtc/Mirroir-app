@@ -2,14 +2,14 @@ package com.flo.miroir;
 
 import android.app.Activity;
 import android.content.Context;
-import android.hardware.display.DisplayManager;
+import android.graphics.Color;
 import android.media.MediaRouter;
 import android.media.MediaRouter.RouteInfo;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -37,8 +37,10 @@ public class DisplayActivity extends Activity {
 
 				@Override
 				public void onRoutePresentationDisplayChanged(MediaRouter router, RouteInfo info) {
-					if(!info.getName().equals(Utils.LocalRouteName)){
+					if(!info.getName().equals(RemoteDisplayManager.getInstance().getLocalRouteName())){
+						setProgressBarIndeterminateVisibility(false);
 						showStandByPrez();
+						mDisplayListAdapter.updateContents();
     	            }
 				}
     };
@@ -46,6 +48,8 @@ public class DisplayActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_display_list);
 
         mDisplayListAdapter = new DisplayListAdapter(this);
@@ -59,6 +63,8 @@ public class DisplayActivity extends Activity {
         super.onResume();
         mDisplayListAdapter.updateContents();
         RemoteDisplayManager.getInstance().subscribeToCallabcks(mMediaRouterCallbacks);
+        
+        RemoteDisplayManager.getInstance().displayStandByPresentation(this);
     }
     
     @Override
@@ -71,13 +77,14 @@ public class DisplayActivity extends Activity {
     private OnItemClickListener displayListListener = new OnItemClickListener() {
 
 		@Override
-		public void onItemClick(AdapterView parent, View v, int position, long id) {
+		public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 			RouteInfo info = mDisplayListAdapter.getItem(position);
 			makeConnection(info);
 		}
 	};
     
 	private void makeConnection(RouteInfo info){
+		setProgressBarIndeterminateVisibility(true);   
 		RemoteDisplayManager.getInstance().selectRoute(info);
 	}
 	
@@ -90,7 +97,7 @@ public class DisplayActivity extends Activity {
         final Context mContext;
         
         public DisplayListAdapter(Context context) {
-            super(context, R.layout.display_item_list_row);
+            super(context, R.layout.row_display_item_list);
             mContext = context;
         }
         
@@ -98,7 +105,7 @@ public class DisplayActivity extends Activity {
         public View getView(int position, View convertView, ViewGroup parent) {
         	final View v;
             if (convertView == null) {
-                v = ((Activity) mContext).getLayoutInflater().inflate(R.layout.display_item_list_row, null);
+                v = ((Activity) mContext).getLayoutInflater().inflate(R.layout.row_display_item_list, null);
             } else {
                 v = convertView;
             }
@@ -108,6 +115,11 @@ public class DisplayActivity extends Activity {
             //NAME
             TextView tv = (TextView)v.findViewById(R.id.display_title);
             tv.setText(info.getName());
+            
+            if(RemoteDisplayManager.getInstance().isLocalRoute(info))
+            	tv.setTextColor(Color.parseColor("#cc0066"));
+            else if(RemoteDisplayManager.getInstance().isCurrentRoute(info))
+            	tv.setTextColor(Color.parseColor("#4f9b7a"));
 
             //CAPABILITIES
             tv = (TextView)v.findViewById(R.id.display_capability);
@@ -119,12 +131,14 @@ public class DisplayActivity extends Activity {
             	icon.setImageDrawable(info.getIconDrawable());
             }
             
+            if(!info.isEnabled())
+            	v.setClickable(false);
+            
             return v;
         }
         
         public void updateContents() {
             clear();
-
             addAll(RemoteDisplayManager.getInstance().getAllRoutes());
         }
     }

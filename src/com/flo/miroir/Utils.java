@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 public class Utils {
-	public static String LocalRouteName = "Phone";
+	//public static String LocalRouteName = "Phone";
 	
 	public static String imagePresentationName = "ImagePresentation";
 	public static String videoPresentationName = "VideoPresentation";

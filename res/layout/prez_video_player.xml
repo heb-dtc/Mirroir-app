@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@android:color/transparent" >
+    android:background="@color/blue_pastel" >
     
     <ImageView 
         android:id="@+id/image_view"
@@ -16,15 +16,18 @@
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:layout_centerHorizontal="true"
+        android:paddingTop="15dp"
         android:text="No Name..."
-        android:visibility="gone"/>
+        android:visibility="gone"
+        />
     
     <VideoView
-	        android:id="@+id/videoView"
-	        android:layout_width="fill_parent"
-	        android:layout_height="fill_parent"
-	        android:layout_below="@id/video_name_view"
-	        android:layout_centerInParent="true"
-	        android:visibility="gone" />
+        android:id="@+id/videoView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@id/video_name_view"
+        android:layout_centerInParent="true" 
+        android:visibility="gone"
+       	/>
 
 </RelativeLayout>

@@ -3,20 +3,15 @@ package com.flo.miroir;
 import java.util.ArrayList;
 
 import android.app.Activity;
-import android.app.MediaRouteActionProvider;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.MediaRouter;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -35,9 +30,6 @@ public class LocalGalleryActivity extends Activity {
 	
 	private Cursor mCursor;
 	private int columnIndex; //idx of the ID column
-	//private Uri mUri = android.provider.MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI;
-	
-	private boolean mShowingPrez = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,9 +37,7 @@ public class LocalGalleryActivity extends Activity {
 		
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_local_gallery);
-		
-		RemoteDisplayManager.getInstance().displayImagePresentation(this);
-		
+
 		mImgGrid = (GridView)findViewById(R.id.gridview);
 		
 		mImgAdpt = new ImageAdapter(this);
@@ -55,7 +45,7 @@ public class LocalGalleryActivity extends Activity {
 		
 		mImgGrid.setOnItemClickListener(new OnItemClickListener() {
 			@Override
-			public void onItemClick(AdapterView parent, View v, int position, long id) { 
+			public void onItemClick(AdapterView<?> parent, View v, int position, long id) { 
 	            String[] projection = {MediaStore.Images.Media.DATA};  
 	            
 	            Cursor cursor = getContentResolver().query( MediaStore.Images.Media.EXTERNAL_CONTENT_URI,  
@@ -87,6 +77,7 @@ public class LocalGalleryActivity extends Activity {
     protected void onResume() {
         // Be sure to call the super class.
         super.onResume();
+        RemoteDisplayManager.getInstance().displayImagePresentation(this);
     }
 	
     @Override
@@ -121,7 +112,7 @@ public class LocalGalleryActivity extends Activity {
 		return true;
 	}
 
-	private void test(){
+	/*private void test(){
 		Bitmap[] thumbnails;
 		String[] arrPath;
 		
@@ -150,7 +141,7 @@ public class LocalGalleryActivity extends Activity {
         }
         
         imagecursor.close();
-	}
+	}*/
 
 	/**
 	 * 

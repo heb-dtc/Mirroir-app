@@ -2,7 +2,6 @@ package com.flo.miroir;
 
 import java.util.ArrayList;
 
-import android.app.Presentation;
 import android.content.Context;
 import android.media.MediaRouter;
 import android.media.MediaRouter.RouteInfo;
@@ -15,9 +14,11 @@ public class RemoteDisplayManager {
 	
 	private static RemoteDisplayManager mInstance;
 	
-	private Context mContext;
+	//private Context mContext;
 	private MediaRouter mMediaRouter;
 	private RemotePresentation mCurenntPresentation;
+	private RouteInfo mCurrentRouteSelected;
+	private RouteInfo mLocalRoute;
 	
 	private ArrayList<IRemoteDisplayCallbacks> mSubscriberList;
 	
@@ -26,8 +27,13 @@ public class RemoteDisplayManager {
 	}
 	
 	public void initializeRemoteDisplayManager(Context c){
+		//get Media Router hooks
 		mMediaRouter = (MediaRouter) c.getSystemService(Context.MEDIA_ROUTER_SERVICE);
 		mMediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, mMediaRouterCallback);
+		
+		//some stuff to init
+		findLocalRoute();
+		mCurrentRouteSelected = mMediaRouter.getSelectedRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
 	}
 	
 	public static RemoteDisplayManager getInstance(){
@@ -62,7 +68,7 @@ public class RemoteDisplayManager {
 	        		}
 	        		mCurenntPresentation = prez;
 	        		mCurenntPresentation.show();
-	        		mContext = c;
+	        		//mContext = c;
 	        		success = true;
 	        	}
 	        }
@@ -96,13 +102,21 @@ public class RemoteDisplayManager {
 	        		}
 	        		mCurenntPresentation = prez;
 	        		mCurenntPresentation.show();
-	        		mContext = c;
+	        		//mContext = c;
 	        		success = true;
 	        	}
 	        }
 		}
 		
 		return success;
+	}
+	
+	public void hideAudioPlayerPresentation(){
+		if(mCurenntPresentation != null){
+			if(mCurenntPresentation.getName().equals(Utils.musicPresentationName)){
+				mCurenntPresentation.cancel();
+			}
+		}
 	}
 	
 	public boolean displayImagePresentation(Context c){
@@ -122,7 +136,7 @@ public class RemoteDisplayManager {
 	        		}
 	        		mCurenntPresentation = prez;
 	        		mCurenntPresentation.show();
-	        		mContext = c;
+	        		//mContext = c;
 	        		success = true;
 	        	}
 	        }
@@ -156,7 +170,7 @@ public class RemoteDisplayManager {
 	        		}
 	        		mCurenntPresentation = prez;
 	        		mCurenntPresentation.show();
-	        		mContext = c;
+	        		//mContext = c;
 	        		success = true;
 	        	}
 	        }
@@ -175,6 +189,9 @@ public class RemoteDisplayManager {
 	
 	public void shutDown(){
 		if(mMediaRouter != null){
+			if(mLocalRoute != mCurrentRouteSelected)
+				releaseConnection();
+			
 			mMediaRouter.removeCallback(mMediaRouterCallback);
 		}
 	}
@@ -195,10 +212,77 @@ public class RemoteDisplayManager {
 		}
 	}
 	
-	public void selectRoute(RouteInfo info){
-		mMediaRouter.selectRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, info);
+	public boolean isConnectedToRemoteDisplay(){
+		return (mCurrentRouteSelected.getPlaybackType() == MediaRouter.RouteInfo.PLAYBACK_TYPE_REMOTE) ? true : false;
 	}
 	
+	public boolean isCurrentRoute(RouteInfo info){
+		if(mCurrentRouteSelected != null && mMediaRouter != null){
+			if(info == mCurrentRouteSelected)
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean isLocalRoute(RouteInfo info){
+		if(mLocalRoute != null && mMediaRouter != null){
+			if(info == mLocalRoute)
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public void findLocalRoute(){
+		Log.d(TAG, "");
+		int nrRoutes = mMediaRouter.getRouteCount();
+    	
+        for(int i=0 ; i < nrRoutes ; i++){
+        	//assuming there is only one...
+        	//true for Nexus, TBT on more devices... 
+    		if(mMediaRouter.getRouteAt(i).getPlaybackType() == MediaRouter.RouteInfo.PLAYBACK_TYPE_LOCAL){
+    			mLocalRoute = mMediaRouter.getRouteAt(i);
+    			Log.d(TAG, "");
+    		}
+    	}
+	}
+	
+	public String getLocalRouteName(){
+		if(mLocalRoute != null){
+			return mLocalRoute.getName().toString();
+		}
+		
+		return null;
+	}
+	
+	public boolean selectRoute(RouteInfo info){
+		boolean success = false;
+		if(mMediaRouter != null){
+			mMediaRouter.selectRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, info);
+			mCurrentRouteSelected = info;
+			success = true;
+		}
+		
+		return success;
+	}
+	
+	public boolean releaseConnection(){
+		boolean success = false;
+		if(mLocalRoute != null && mMediaRouter != null){
+			mMediaRouter.selectRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, mLocalRoute);
+			success = true;
+		}
+		
+		return success;
+	}
+	
+	/**
+	 * 
+	 * PRESENTATION CURRENT CONTENT UPDATE HOOKS
+	 * 
+	 * @param imagePath
+	 */
 	public void updateImagePlayerPresentation(String imagePath){
 		Log.d(TAG, "updateImagePlayerPresentation");
 		
@@ -232,6 +316,44 @@ public class RemoteDisplayManager {
 		}
 	}
 	
+	/**
+	 * 
+	 * MUSIC PLAYER PRESENTATION CONTROLS HOOKS
+	 * 
+	 */
+	
+	public void resumeAudioPlayer(){
+		if(mCurenntPresentation != null){
+			if(mCurenntPresentation.getName().equals(Utils.musicPresentationName)){
+				AudioPlayerPrez prez = (AudioPlayerPrez)mCurenntPresentation;
+				prez.resumeAudioPlayer();
+			}
+		}
+	}
+	
+	public void pauseAudioPlayer(){
+		if(mCurenntPresentation != null){
+			if(mCurenntPresentation.getName().equals(Utils.musicPresentationName)){
+				AudioPlayerPrez prez = (AudioPlayerPrez)mCurenntPresentation;
+				prez.resumeAudioPlayer();
+			}
+		}
+	}
+	
+	public void stopAudioPlayer(){
+		if(mCurenntPresentation != null){
+			if(mCurenntPresentation.getName().equals(Utils.musicPresentationName)){
+				AudioPlayerPrez prez = (AudioPlayerPrez)mCurenntPresentation;
+				prez.stopAudioPlayer();
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * VIDEO PLAYER PRESENTATION CONTROLS HOOKS
+	 * 
+	 */
 	public void pauseVideoPlayer(){
 		if(mCurenntPresentation != null){
 			if(mCurenntPresentation.getName().equals(Utils.videoPresentationName)){

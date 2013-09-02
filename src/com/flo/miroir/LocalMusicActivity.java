@@ -5,22 +5,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import android.app.Activity;
-import android.app.MediaRouteActionProvider;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.media.MediaRouter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -37,9 +31,6 @@ public class LocalMusicActivity extends Activity{
 
 	private final String TAG = this.getClass().getName();
 	
-	private MediaRouter mMediaRouter;
-	private AudioPlayerPrez mAudioPrez;
-	
 	private ListView mListView = null;
 	private View mPlaybakControlView = null;
 	private Button mPlayButton;
@@ -52,7 +43,6 @@ public class LocalMusicActivity extends Activity{
 	private ArrayList<ContentDetails> mAudioDetailsList = null;
 	
 	private int mCurrentPosInList = -1;
-	private boolean mShowingPrez = false;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,8 +50,6 @@ public class LocalMusicActivity extends Activity{
         
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_local_video);
-        
-        mMediaRouter = (MediaRouter)getSystemService(Context.MEDIA_ROUTER_SERVICE);
         
         mListView = (ListView)findViewById(R.id.list_view);
         mPlaybakControlView = (View) findViewById(R.id.playback_controls_view);
@@ -81,15 +69,13 @@ public class LocalMusicActivity extends Activity{
 	    protected void onResume() {
 	        // Be sure to call the super class.
 	        super.onResume();
-
-	        // Listen for changes to media routes.
-	        mMediaRouter.addCallback(MediaRouter.ROUTE_TYPE_LIVE_VIDEO, mMediaRouterCallback);
+	        RemoteDisplayManager.getInstance().displayAudioPresentation(this);
 	    }
 		
 	    @Override
 	    protected void onPause() {
 	    	super.onPause();
-	    	mMediaRouter.removeCallback(mMediaRouterCallback);
+	    	RemoteDisplayManager.getInstance().hideAudioPlayerPresentation();
 	    }
 	    
 	    @Override
@@ -102,16 +88,16 @@ public class LocalMusicActivity extends Activity{
 	    public boolean onCreateOptionsMenu(Menu menu) {
 	        getMenuInflater().inflate(R.menu.main, menu);
 	        
-	        MenuItem mediaRouteMenuItem = menu.findItem(R.id.menu_media_route);
+	        /*MenuItem mediaRouteMenuItem = menu.findItem(R.id.menu_media_route);
 	        MediaRouteActionProvider mediaRouteActionProvider = (MediaRouteActionProvider)mediaRouteMenuItem.getActionProvider();
 	        mediaRouteActionProvider.setRouteTypes(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
-	        
+	        */
 			return true;
 	    }
 	    
 	    private OnItemClickListener mListItemClickListener = new OnItemClickListener(){
 			@Override
-			public void onItemClick(AdapterView parent, View v, int position, long id) {
+			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 				updateAudioPrez(position);
 			}
 	    };
@@ -127,16 +113,14 @@ public class LocalMusicActivity extends Activity{
 	    	mPlayButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					if(mAudioPrez != null){
-						//mAudioPrez.pauseAudioPlayer();
-					}
+					RemoteDisplayManager.getInstance().pauseAudioPlayer();
 				}
 			});
 	    	
 	    	mStopButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					//mAudioPrez.stopAudioPlayer();
+					RemoteDisplayManager.getInstance().stopAudioPlayer();
 				}
 			});
 	    	
@@ -189,16 +173,14 @@ public class LocalMusicActivity extends Activity{
 	    
 	    private void updateAudioPrez(int position){
 	    	Log.d(TAG, "updateVideoPrez: " + position);
-	    	
-			if(mAudioPrez != null){
-				if(position >= 0 && position < mAudioDetailsList.size()){
-					ContentDetails item = mAudioDetailsList.get(position);
-					mCurrentPosInList = position;
-					//mAudioPrez.startMusicPlayer(item);
-					
-					//add playback controls to UI
-					mPlaybakControlView.setVisibility(View.VISIBLE);
-				}
+
+			if(position >= 0 && position < mAudioDetailsList.size()){
+				ContentDetails item = mAudioDetailsList.get(position);
+				mCurrentPosInList = position;
+				RemoteDisplayManager.getInstance().updateAudioPlayerPresentation(item);
+				
+				//add playback controls to UI
+				mPlaybakControlView.setVisibility(View.VISIBLE);
 			}
 	    }
 	    
@@ -362,7 +344,7 @@ public class LocalMusicActivity extends Activity{
 				final View contentRow;
 				
 				if (convertView == null){
-					contentRow = inflater.inflate(R.layout.audio_item_list_row, null);
+					contentRow = inflater.inflate(R.layout.row_audio_item_list, null);
 				}
 				else{
 					contentRow = convertView;
@@ -388,70 +370,4 @@ public class LocalMusicActivity extends Activity{
 				return contentRow;
 			}
 	    }
-		
-		/**
-		 * 
-		 * MEDIA ROUTER RELATED METHODS
-		 * 
-		 */
-		
-		private void startAudioPlayerPresentation(){
-			Log.d(TAG, "startVideoPlayerPresentation");
-			
-			// Get the current route and its presentation display.
-	        MediaRouter.RouteInfo route = mMediaRouter.getSelectedRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
-	  
-	        if (route != null) {
-	        	Display presentationDisplay = route.getPresentationDisplay();
-	        	if (presentationDisplay != null) {
-	        		//create the prez
-	        		mAudioPrez = new AudioPlayerPrez(this, presentationDisplay);
-	        		
-	        		//show it
-	        		mAudioPrez.show();
-	        	}
-	        }
-		}
-		
-		private final MediaRouter.SimpleCallback mMediaRouterCallback =
-			    new MediaRouter.SimpleCallback() {
-			        @Override
-			        public void onRouteSelected(MediaRouter router, int type, MediaRouter.RouteInfo info) {
-			            Log.e(TAG, "onRouteSelected: type=" + type + ", info=" + info);
-			            if(info.getPlaybackType() == MediaRouter.RouteInfo.PLAYBACK_TYPE_LOCAL){
-			            }
-			            else{
-			            }
-			        }
-			
-			        @Override
-			        public void onRouteUnselected(MediaRouter router, int type, MediaRouter.RouteInfo info) {
-			            Log.e(TAG, "onRouteUnselected: type=" + type + ", info=" + info);
-			            if(info.getPlaybackType() == MediaRouter.RouteInfo.PLAYBACK_TYPE_LOCAL){
-			            }
-			            else{
-			            }
-			        }
-			
-			        @Override
-			        public void onRoutePresentationDisplayChanged(MediaRouter router, MediaRouter.RouteInfo info) {
-			            Log.e(TAG, "onRoutePresentationDisplayChanged: info=" + info);
-			            if(info.getPlaybackType() == MediaRouter.RouteInfo.PLAYBACK_TYPE_LOCAL){
-			            }
-			            else{
-			            	//if remote and if the prez is not shown 
-			            	//it means the prez should be loaded
-			            	if(!mShowingPrez){
-			            		startAudioPlayerPresentation();
-			            		mShowingPrez = true;
-			            	}
-			            	else{
-			            		mShowingPrez = false;
-			            		
-			            		//update UI
-			            		mPlaybakControlView.setVisibility(View.GONE);
-			            	}
-			            }
-			        }
-		};
 }

@@ -2,7 +2,6 @@ package com.flo.miroir;
 
 import java.io.IOException;
 
-import android.app.Presentation;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -23,7 +22,7 @@ public class AudioPlayerPrez extends RemotePresentation{
 	private PlayerAsyncTask mPlayerAsyncTask;
 	
 	//URI 
-	private static String mHighQualityStreamURI = "http://broadcast.infomaniak.ch/radionova-high.mp3";
+	//private static String mHighQualityStreamURI = "http://broadcast.infomaniak.ch/radionova-high.mp3";
 	private static String mLowQualityStreamURI = "http://broadcast.infomaniak.ch/radionova-low.mp3";
 	
 	
@@ -40,7 +39,7 @@ public class AudioPlayerPrez extends RemotePresentation{
 		
 		super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.audio_player_activity);
+        setContentView(R.layout.prez_audio_player);
         mSongNameView = (TextView) findViewById(R.id.song_title_view);
         mSongNameView.setText("blablablablalba");  
         
@@ -91,6 +90,22 @@ public class AudioPlayerPrez extends RemotePresentation{
     	}
     }
 	
+	private void resumeRadio(){
+    	if(mPlayer != null){
+    		if(mPlayer.isPlaying()){
+    			mPlayer.start();
+    		}
+    	}
+    }
+	
+	private void pauseRadio(){
+    	if(mPlayer != null){
+    		if(mPlayer.isPlaying()){
+    			mPlayer.pause();
+    		}
+    	}
+    }
+	
 	private void stopRadio(){
     	if(mPlayer != null){
     		if(mPlayer.isPlaying()){
@@ -129,8 +144,17 @@ public class AudioPlayerPrez extends RemotePresentation{
 	public void startAudioPlayer(){
 		mPlayerAsyncTask = new PlayerAsyncTask();
 		mPlayerAsyncTask.execute();
-		/*if(mPlayerAsyncTask == null || mPlayerAsyncTask.getStatus() == mPlayerAsyncTask.Status.FINISHED){
-			mPlayerAsyncTask = new AudioPlayerPrez.PlayerAsyncTask().execute();
-		}*/
+	}
+	
+	public void pauseAudioPlayer(){
+		pauseRadio();
+	}
+	
+	public void resumeAudioPlayer(){
+		resumeRadio();
+	}
+	
+	public void stopAudioPlayer(){
+		stopRadio();
 	}
 }

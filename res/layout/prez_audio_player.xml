@@ -5,12 +5,20 @@
     android:background="@color/blue_pastel">
     
     <ImageView 
+        android:id="@+id/image_view"
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:src="@drawable/stand_by"
+        />
+    
+    <ImageView 
         android:id="@+id/album_cover_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:src="@drawable/ic_launcher"
+        android:visibility="gone"
     	/>
 	
     <TextView 
@@ -21,6 +29,7 @@
         android:layout_centerVertical="true"
         android:layout_below="@id/album_cover_view"
         android:text="Song Name Bla bla bla"
+        android:visibility="gone"
     	/>
     
 </RelativeLayout>

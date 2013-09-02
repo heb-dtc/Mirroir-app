@@ -30,5 +30,13 @@
         android:layout_centerHorizontal="true"
         android:layout_below="@id/start_local_gallery_button"
         android:text="Start Local Video"/>
-    
+	
+	<Button 
+        android:id="@+id/start_configure_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:text="Select Remote Display"/>
+
 </RelativeLayout>

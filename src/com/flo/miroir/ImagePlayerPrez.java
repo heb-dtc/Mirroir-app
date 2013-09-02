@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 
-import android.app.Presentation;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,7 +17,6 @@ public class ImagePlayerPrez extends RemotePresentation {
 	
 	private final String TAG = this.getClass().getName();
 
-	private Context mCtx;
 	private ImageView mImgView;
 	private Display mDisplay;
 	private DisplayMetrics mDispMetrics = new DisplayMetrics();
@@ -26,7 +24,6 @@ public class ImagePlayerPrez extends RemotePresentation {
 	
 	public ImagePlayerPrez(Context outerContext, Display display) {
 		super(outerContext, display);
-		mCtx = outerContext;
 		mDisplay = display;
 		mDisplay.getMetrics(mDispMetrics);
 		
@@ -39,7 +36,7 @@ public class ImagePlayerPrez extends RemotePresentation {
 		
 		super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.image_player_prez);
+        setContentView(R.layout.prez_image_player);
         mImgView = (ImageView)findViewById(R.id.image_view);
 	}
 	

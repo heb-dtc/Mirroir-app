@@ -1,9 +1,6 @@
 package com.flo.miroir;
 
-import android.app.Presentation;
 import android.content.Context;
-import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -17,12 +14,11 @@ public class VideoPlayerPrez extends RemotePresentation {
 	private final String TAG = this.getClass().getName();
 	
 	//UI component
-	private Context mCtx;
 	private TextView mVideoNameView;
 	private VideoView mVideoView;
 	private ImageView mImageView;
 	
-	private PlayerAsyncTask mPlayerAsyncTask;
+	//private PlayerAsyncTask mPlayerAsyncTask;
 	
 	private boolean mIsPaused = false;
 	private ContentDetails mCurrentContent;
@@ -38,7 +34,7 @@ public class VideoPlayerPrez extends RemotePresentation {
 		
 		setName(Utils.videoPresentationName);
 		
-		setContentView(R.layout.video_player_prez);
+		setContentView(R.layout.prez_video_player);
 		
 		mVideoView = (VideoView) findViewById(R.id.videoView);
 		mVideoNameView = (TextView) findViewById(R.id.video_name_view);
@@ -103,36 +99,13 @@ public class VideoPlayerPrez extends RemotePresentation {
 	
 	/*
 	 * 
-	 * ASYNC. TASK FOR MEDIA PLAYER
-	 * 
-	 */
-	private class PlayerAsyncTask extends AsyncTask<Void, Void, Void> {	
-		@Override
-		public void onPreExecute(){
-	 	}
-		
-		@Override
-		protected Void doInBackground(Void...params) {
-			startPlayer();
-			return null;
-		}
-		
-		@Override
-		public void onPostExecute(Void res) {
-		}
-	}
-
-	/*
-	 * 
 	 * OUTER CONTROL INTERFACE
 	 * 
 	 */
 	
 	public void startVideoPlayer(ContentDetails item){
 		mCurrentContent = item;
-		
-		//mPlayerAsyncTask = new PlayerAsyncTask();
-		//mPlayerAsyncTask.execute();
+
 		startPlayer();
 	}
 	
