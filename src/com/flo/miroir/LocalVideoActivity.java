@@ -7,6 +7,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
@@ -23,6 +25,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -33,10 +36,11 @@ public class LocalVideoActivity extends Activity{
 	
 	private ListView mListView = null;
 	private View mPlaybakControlView = null;
-	private Button mPlayButton;
-	private Button mStopButton;
+	private ImageView mVideoThumbnailView;
+	private ImageButton mPlayButton;
+	/*private Button mStopButton;
 	private Button mPreviousButton;
-	private Button mNextButton;
+	private Button mNextButton;*/
 	private ContentRowAdapter mVideoAdapter;
 	
 	private Cursor mCursorVideoStore;
@@ -45,6 +49,7 @@ public class LocalVideoActivity extends Activity{
 	private ReadDataTask mReadDataTask;
 	
 	private int mCurrentPosInList = -1;
+	private boolean mIsPaused = false;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,13 +60,15 @@ public class LocalVideoActivity extends Activity{
         
         ActionBar actionBar = getActionBar();
 	    actionBar.setDisplayHomeAsUpEnabled(true);
+	    actionBar.setTitle("Video Gallery");
 
         mListView = (ListView)findViewById(R.id.list_view);
         mPlaybakControlView = (View) findViewById(R.id.playback_controls_view);
-        mPlayButton = (Button) findViewById(R.id.btn_play_video);
-        mStopButton = (Button) findViewById(R.id.btn_stop_video);
+        mPlayButton = (ImageButton) findViewById(R.id.btn_play_video);
+        /*mStopButton = (Button) findViewById(R.id.btn_stop_video);
         mPreviousButton = (Button) findViewById(R.id.btn_previous_video);
-        mNextButton = (Button) findViewById(R.id.btn_next_video);
+        mNextButton = (Button) findViewById(R.id.btn_next_video);*/
+        mVideoThumbnailView = (ImageView) findViewById(R.id.img_view_video_tm);
         
         mVideoDetailsList = new ArrayList<ContentDetails>();
 
@@ -119,11 +126,17 @@ public class LocalVideoActivity extends Activity{
     	mPlayButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				if(mIsPaused)
+					mPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.play_light));
+				else
+					mPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.pause_light));
+				
 				RemoteDisplayManager.INSTANCE.pauseVideoPlayer();
+				mIsPaused = !mIsPaused;
 			}
 		});
     	
-    	mStopButton.setOnClickListener(new OnClickListener() {
+    	/*mStopButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				RemoteDisplayManager.INSTANCE.stopVideoPlayer();
@@ -148,7 +161,7 @@ public class LocalVideoActivity extends Activity{
 					updateVideoPrez(pos);
 				}
 			}
-		});
+		});*/
     	
     	mPlaybakControlView.setVisibility(View.GONE);
 
@@ -187,6 +200,9 @@ public class LocalVideoActivity extends Activity{
 				
 			//add playback controls to UI
 			mPlaybakControlView.setVisibility(View.VISIBLE);
+			
+			if(item.getThumbnail() != null)
+				mVideoThumbnailView.setImageBitmap(item.getThumbnail());
 		}
     }
     
@@ -349,7 +365,7 @@ public class LocalVideoActivity extends Activity{
 			final View contentRow;
 			
 			if (convertView == null){
-				contentRow = inflater.inflate(R.layout.row_video_list, null);
+				contentRow = inflater.inflate(R.layout.row_video_item_list, null);
 			}
 			else{
 				contentRow = convertView;

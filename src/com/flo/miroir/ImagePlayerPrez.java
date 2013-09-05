@@ -21,7 +21,6 @@ public class ImagePlayerPrez extends RemotePresentation {
 	private Display mDisplay;
 	private DisplayMetrics mDispMetrics = new DisplayMetrics();
 	
-	
 	public ImagePlayerPrez(Context outerContext, Display display) {
 		super(outerContext, display);
 		mDisplay = display;
@@ -69,8 +68,9 @@ public class ImagePlayerPrez extends RemotePresentation {
         try {  
             is = new FileInputStream(new File(imgPath));  
             bis = new BufferedInputStream(is);  
-            Bitmap bitmap = BitmapFactory.decodeStream(bis);  
+            //Bitmap bitmap = BitmapFactory.decodeStream(bis);  
             //Bitmap scaledBmp = Bitmap.createScaledBitmap(bitmap, mDispMetrics.widthPixels, mDispMetrics.heightPixels, true);  
+            Bitmap bitmap = Utils.decodeSampledBitmapFromUri(imgPath, mDispMetrics.widthPixels, mDispMetrics.heightPixels);
             //bitmap.recycle();
             //if(scaledBmp != null){
             //	mImgView.setImageBitmap(scaledBmp);

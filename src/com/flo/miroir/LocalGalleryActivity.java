@@ -43,37 +43,13 @@ public class LocalGalleryActivity extends Activity {
 		
 		ActionBar actionBar = getActionBar();
 	    actionBar.setDisplayHomeAsUpEnabled(true);
+	    actionBar.setTitle("Images Gallery");
 
 		mImgGrid = (GridView)findViewById(R.id.gridview);
 		
 		mImgAdpt = new ImageAdapter(this);
 		mImgGrid.setAdapter(mImgAdpt);
-		
-		mImgGrid.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View v, int position, long id) { 
-	            String[] projection = {MediaStore.Images.Media.DATA};  
-	            
-	            Cursor cursor = getContentResolver().query( MediaStore.Images.Media.EXTERNAL_CONTENT_URI,  
-	                    projection, 
-	                    null,  
-	                    null,  
-	                    null);  
-	            
-	            if(cursor != null){
-		            int idx = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);  
-		            cursor.moveToPosition(position);  
-		            
-		            // Get image filename  
-		            String imagePath = cursor.getString(idx);
-		            updatePrezImg(imagePath);
-		            
-		            //clean up
-	                cursor.close();  
-	                projection = null;  
-	            }
-			}
-		});
+		mImgGrid.setOnItemClickListener(mImageItemClickListener);
 		
 		mLoadImgtask = new LoadImgAsyncTask();
 		mLoadImgtask.execute();
@@ -81,7 +57,6 @@ public class LocalGalleryActivity extends Activity {
 	
 	@Override
     protected void onResume() {
-        // Be sure to call the super class.
         super.onResume();
         RemoteDisplayManager.INSTANCE.displayImagePresentation(this);
     }
@@ -89,7 +64,6 @@ public class LocalGalleryActivity extends Activity {
     @Override
     protected void onPause() {
     	super.onPause();
-    	
     	RemoteDisplayManager.INSTANCE.hideImagePresentation();
     }
     
@@ -107,6 +81,33 @@ public class LocalGalleryActivity extends Activity {
             ((BitmapDrawable) v.getDrawable()).setCallback(null);  
         }
     }  
+	
+	OnItemClickListener mImageItemClickListener = new OnItemClickListener() {
+
+		@Override
+		public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+            String[] projection = {MediaStore.Images.Media.DATA};  
+            
+            Cursor cursor = getContentResolver().query( MediaStore.Images.Media.EXTERNAL_CONTENT_URI,  
+                    projection, 
+                    null,  
+                    null,  
+                    null);  
+            
+            if(cursor != null){
+	            int idx = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);  
+	            cursor.moveToPosition(position);  
+	            
+	            // Get image filename  
+	            String imagePath = cursor.getString(idx);
+	            updatePrezImg(imagePath);
+	            
+	            //clean up
+                cursor.close();  
+                projection = null;  
+            }
+		}
+	};
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -166,8 +167,8 @@ public class LocalGalleryActivity extends Activity {
 	    		imageView = (ImageView) convertView;
 	    	}
 	    	
-	    	imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);  
-            imageView.setPadding(8, 8, 8, 8);  
+	    	imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);  
+	    	imageView.setLayoutParams(new GridView.LayoutParams(240, 240));
             imageView.setImageBitmap(mImgList.get(position).getBitmap());
 
 	    	return imageView;
@@ -202,7 +203,9 @@ public class LocalGalleryActivity extends Activity {
 			
 			Bitmap bitmap = null;  
 	        Bitmap newBitmap = null;  
-	        String[] projection = {MediaStore.Images.Media._ID};
+	        String[] projection = {
+	        		MediaStore.Images.Media._ID,
+	        		MediaStore.Images.Media.DATA};
 	        
 			//Do the query
 	        mCursor = getContentResolver().query( MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -227,6 +230,9 @@ public class LocalGalleryActivity extends Activity {
 			
 			//make the bitmap one by one and update UI accordingly
 			int imageID = 0;  
+			
+			String imgURI;
+			
 	        for (int i = 0; i < mCursor.getCount(); i++) { 
 	        	//check and cleanup
 	        	if(isCancelled()){
@@ -235,17 +241,27 @@ public class LocalGalleryActivity extends Activity {
 	        	}
 	        	
 	        	mCursor.moveToPosition(i);  
+	        	
 	            imageID = mCursor.getInt(columnIndex);  
-	            
+	            imgURI = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
+	            		
 	            try {  
-	                bitmap = MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), imageID, MediaStore.Images.Thumbnails.MINI_KIND, null);
-	                if (bitmap != null) {  
-	                    newBitmap = Bitmap.createScaledBitmap(bitmap, 96, 96, true);  
+	            	//bitmap = MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), imageID, MediaStore.Images.Thumbnails.MINI_KIND, null);
+	                /*if (bitmap != null) {  
+	                    newBitmap = Bitmap.createScaledBitmap(bitmap, 240, 240, true);
+
 	                    bitmap.recycle();  
 	                    if (newBitmap != null) {  
 	                        publishProgress(new LoadedImage(newBitmap));  
 	                    }  
-	                }  
+	                }  */
+	            	
+	            	if (imgURI != null) {
+	            		newBitmap = Utils.decodeSampledBitmapFromUri(imgURI, 240, 240);
+	            		if (newBitmap != null) {  
+	                        publishProgress(new LoadedImage(newBitmap));  
+	                    }  
+	            	}
 	            } catch (Exception e) {  
 	                //Error fetching image, try to recover  
 	            }  

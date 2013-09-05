@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/light_grey"
     android:orientation="horizontal">
     
 	<ImageView 
@@ -13,24 +14,32 @@
 		android:contentDescription="@string/img_desc"/>
 	
 	<LinearLayout
-	    android:layout_width="wrap_content"
+	    android:layout_width="fill_parent"
     	android:layout_height="match_parent"
-    	android:layout_marginLeft="20dp"
+    	android:layout_marginLeft="10dp"
+    	android:paddingLeft="10dp"
         android:gravity="center_vertical"
+        android:background="@android:color/white"
     	android:orientation="vertical">
     	
 		<TextView 
 		    android:id="@+id/content_title" 
+		    android:textColor="@android:color/black"
+            android:textSize="20sp"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content" 
 			android:text="@string/content_title"/>
 		<TextView 
 		    android:id="@+id/content_type" 
+		    android:textColor="@android:color/black"
+            android:textSize="12sp"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content" 
 			android:text="@string/content_type"/>
 		<TextView 
 		    android:id="@+id/content_duration_media_store" 
+		    android:textColor="@android:color/black"
+            android:textSize="12sp"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content" 
 			android:text="@string/content_duration"/>

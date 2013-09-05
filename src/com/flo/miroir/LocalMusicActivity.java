@@ -26,6 +26,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -36,16 +37,17 @@ public class LocalMusicActivity extends Activity{
 	
 	private ListView mListView = null;
 	private View mPlaybakControlView = null;
-	private Button mPlayButton;
-	private Button mStopButton;
+	private ImageButton mPlayButton;
+	/*private Button mStopButton;
 	private Button mPreviousButton;
-	private Button mNextButton;
+	private Button mNextButton;*/
 	private ContentRowAdapter mAudioAdapter;
 	
 	private Cursor mCursorAudioStore;
 	private ArrayList<ContentDetails> mAudioDetailsList = null;
 	
 	private int mCurrentPosInList = -1;
+	private boolean mIsPaused = false;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,17 +55,18 @@ public class LocalMusicActivity extends Activity{
         
         
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        setContentView(R.layout.activity_local_video);
+        setContentView(R.layout.activity_local_music);
         
         ActionBar actionBar = getActionBar();
 	    actionBar.setDisplayHomeAsUpEnabled(true);
+	    actionBar.setTitle("Music Gallery");
         
         mListView = (ListView)findViewById(R.id.list_view);
         mPlaybakControlView = (View) findViewById(R.id.playback_controls_view);
-        mPlayButton = (Button) findViewById(R.id.btn_play_video);
-        mStopButton = (Button) findViewById(R.id.btn_stop_video);
+        mPlayButton = (ImageButton) findViewById(R.id.btn_play_video);
+        /*mStopButton = (Button) findViewById(R.id.btn_stop_video);
         mPreviousButton = (Button) findViewById(R.id.btn_previous_video);
-        mNextButton = (Button) findViewById(R.id.btn_next_video);
+        mNextButton = (Button) findViewById(R.id.btn_next_video);*/
         
         mAudioDetailsList = new ArrayList<ContentDetails>();
 
@@ -94,11 +97,7 @@ public class LocalMusicActivity extends Activity{
 	    @Override
 	    public boolean onCreateOptionsMenu(Menu menu) {
 	        getMenuInflater().inflate(R.menu.main, menu);
-	        
-	        /*MenuItem mediaRouteMenuItem = menu.findItem(R.id.menu_media_route);
-	        MediaRouteActionProvider mediaRouteActionProvider = (MediaRouteActionProvider)mediaRouteMenuItem.getActionProvider();
-	        mediaRouteActionProvider.setRouteTypes(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
-	        */
+
 			return true;
 	    }
 	    
@@ -120,11 +119,17 @@ public class LocalMusicActivity extends Activity{
 	    	mPlayButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
+					if(mIsPaused)
+						mPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.play_light));
+					else
+						mPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.pause_light));
+					
 					RemoteDisplayManager.INSTANCE.pauseAudioPlayer();
+					mIsPaused = !mIsPaused;
 				}
 			});
 	    	
-	    	mStopButton.setOnClickListener(new OnClickListener() {
+	    	/*mStopButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					RemoteDisplayManager.INSTANCE.stopAudioPlayer();
@@ -149,7 +154,7 @@ public class LocalMusicActivity extends Activity{
 						updateAudioPrez(pos);
 					}
 				}
-			});
+			});*/
 	    	
 	    	mPlaybakControlView.setVisibility(View.GONE);
 

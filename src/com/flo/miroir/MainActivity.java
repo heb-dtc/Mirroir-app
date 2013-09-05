@@ -15,7 +15,7 @@ public class MainActivity extends Activity {
 
 	private final String TAG = this.getClass().getName();
 
-	private Button mStartRadioPrezBtn;
+	private Button mStartLocalMusicBtn;
 	private Button mStartLocalGallleryBtn;
 	private Button mStartLocalVideoBtn;
 	private Button mStartConfigureBtn;
@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
 		
 		RemoteDisplayManager.INSTANCE.initializeRemoteDisplayManager(this);
 
-		mStartRadioPrezBtn = (Button)findViewById(R.id.start_radio_button);
+		mStartLocalMusicBtn = (Button)findViewById(R.id.start_radio_button);
 		mStartLocalGallleryBtn = (Button)findViewById(R.id.start_local_gallery_button);
 		mStartLocalVideoBtn = (Button)findViewById(R.id.start_local_video_button);
 		mStartConfigureBtn = (Button)findViewById(R.id.start_configure_button);
@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
 			}
 		});
 		
-		mStartRadioPrezBtn.setOnClickListener(new OnClickListener() {
+		mStartLocalMusicBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				startLocalMusicView();
@@ -69,15 +69,15 @@ public class MainActivity extends Activity {
         	RemoteDisplayManager.INSTANCE.displayStandByPresentation(this);
         	
         	//Enable UI
-        	mStartRadioPrezBtn.setEnabled(true);
+        	mStartLocalMusicBtn.setEnabled(true);
     		mStartLocalGallleryBtn.setEnabled(true);
     		mStartLocalVideoBtn.setEnabled(true);
         }
         else{
         	//Disable UI
-        	mStartRadioPrezBtn.setEnabled(false);
+        	mStartLocalMusicBtn.setEnabled(true);
     		mStartLocalGallleryBtn.setEnabled(false);
-    		mStartLocalVideoBtn.setEnabled(false);
+    		mStartLocalVideoBtn.setEnabled(true);
         }
         	
     }
@@ -99,12 +99,7 @@ public class MainActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
-		
-        /*MenuItem mediaRouteMenuItem = menu.findItem(R.id.menu_media_route);
-        MediaRouteActionProvider mediaRouteActionProvider = (MediaRouteActionProvider)mediaRouteMenuItem.getActionProvider();
-        mediaRouteActionProvider.setRouteTypes(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
-        //mediaRouteActionProvider.setRouteTypes(MediaRouter.ROUTE_TYPE_LIVE_AUDIO);*/
-        
+
 		return true;
 	}
 	

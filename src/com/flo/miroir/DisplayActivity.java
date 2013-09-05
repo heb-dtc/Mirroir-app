@@ -57,6 +57,7 @@ public class DisplayActivity extends Activity {
         
 		ActionBar actionBar = getActionBar();
 	    actionBar.setDisplayHomeAsUpEnabled(true);
+	    actionBar.setTitle("Display list");
 
         mDisplayListAdapter = new DisplayListAdapter(this);
         mListView = (ListView)findViewById(R.id.display_list_view);
