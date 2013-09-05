@@ -31,6 +31,8 @@ public class LocalGalleryActivity extends Activity {
 	
 	private Cursor mCursor;
 	private int columnIndex; //idx of the ID column
+
+	private LoadImgAsyncTask mLoadImgtask;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -73,8 +75,8 @@ public class LocalGalleryActivity extends Activity {
 			}
 		});
 		
-		LoadImgAsyncTask task = new LoadImgAsyncTask();
-		task.execute();
+		mLoadImgtask = new LoadImgAsyncTask();
+		mLoadImgtask.execute();
 	}
 	
 	@Override
@@ -97,6 +99,9 @@ public class LocalGalleryActivity extends Activity {
         final int count = grid.getChildCount();  
         ImageView v = null;  
         
+        //cancel the potential task
+        mLoadImgtask.cancel(true);
+        
         for (int i = 0; i < count; i++) {  
             v = (ImageView) grid.getChildAt(i);  
             ((BitmapDrawable) v.getDrawable()).setCallback(null);  
@@ -108,44 +113,8 @@ public class LocalGalleryActivity extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		
-        /*MenuItem mediaRouteMenuItem = menu.findItem(R.id.menu_media_route);
-        MediaRouteActionProvider mediaRouteActionProvider = (MediaRouteActionProvider)mediaRouteMenuItem.getActionProvider();
-        mediaRouteActionProvider.setRouteTypes(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
-        */
-		
 		return true;
 	}
-
-	/*private void test(){
-		Bitmap[] thumbnails;
-		String[] arrPath;
-		
-		final String[] columns = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID };
-        final String orderBy = MediaStore.Images.Media._ID;
-        Cursor imagecursor = getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null,
-                null, orderBy);
-        
-        int image_column_index = imagecursor.getColumnIndex(MediaStore.Images.Media._ID);
-        
-        Log.d(TAG, "There are " + imagecursor.getCount() + " items");
-        
-        int count = imagecursor.getCount();
-        thumbnails = new Bitmap[count];
-        arrPath = new String[count];
-        
-        for (int i = 0; i < count; i++) {
-            imagecursor.moveToPosition(i);
-            int id = imagecursor.getInt(image_column_index);
-            int dataColumnIndex = imagecursor.getColumnIndex(MediaStore.Images.Media.DATA);
-            thumbnails[i] = MediaStore.Images.Thumbnails.getThumbnail(
-                    getApplicationContext().getContentResolver(), id,
-                    MediaStore.Images.Thumbnails.MICRO_KIND, null);
-            arrPath[i]= imagecursor.getString(dataColumnIndex);
-        }
-        
-        imagecursor.close();
-	}*/
 
 	/**
 	 * 
@@ -233,12 +202,9 @@ public class LocalGalleryActivity extends Activity {
 			
 			Bitmap bitmap = null;  
 	        Bitmap newBitmap = null;  
-	        //Uri uri = null;        
-			
-			//String[] projection = {MediaStore.Images.Thumbnails._ID};
 	        String[] projection = {MediaStore.Images.Media._ID};
+	        
 			//Do the query
-			//mCursor = getContentResolver().query( mUri,
 	        mCursor = getContentResolver().query( MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
 			                projection,
 			                null,
@@ -261,13 +227,17 @@ public class LocalGalleryActivity extends Activity {
 			
 			//make the bitmap one by one and update UI accordingly
 			int imageID = 0;  
-	        for (int i = 0; i < mCursor.getCount(); i++) {  
+	        for (int i = 0; i < mCursor.getCount(); i++) { 
+	        	//check and cleanup
+	        	if(isCancelled()){
+	        		mCursor.close();
+	        		return null;
+	        	}
+	        	
 	        	mCursor.moveToPosition(i);  
 	            imageID = mCursor.getInt(columnIndex);  
-
-	            //uri = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, "" + imageID);  
+	            
 	            try {  
-	                //bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));  
 	                bitmap = MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), imageID, MediaStore.Images.Thumbnails.MINI_KIND, null);
 	                if (bitmap != null) {  
 	                    newBitmap = Bitmap.createScaledBitmap(bitmap, 96, 96, true);  
@@ -293,6 +263,11 @@ public class LocalGalleryActivity extends Activity {
 		@Override
 		public void onPostExecute(Object res) {
 			setProgressBarIndeterminateVisibility(false);  
+		}
+		
+		@Override
+		protected void onCancelled(Object result) {
+			setProgressBarIndeterminateVisibility(false);
 		}
 	}
 	

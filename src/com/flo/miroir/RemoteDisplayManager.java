@@ -296,7 +296,7 @@ public enum RemoteDisplayManager {
 	}
 	
 	public void updateVideoPlayerPresentation(ContentDetails item){
-		Log.d(TAG, "updateImagePlayerPresentation");
+		Log.d(TAG, "updateVideoPlayerPresentation");
 		
 		if(mCurenntPresentation != null){
 			if(mCurenntPresentation.getName().equals(Utils.videoPresentationName)){
@@ -307,12 +307,12 @@ public enum RemoteDisplayManager {
 	}
 	
 	public void updateAudioPlayerPresentation(ContentDetails item){
-		Log.d(TAG, "updateImagePlayerPresentation");
+		Log.d(TAG, "updateAudioPlayerPresentation");
 		
 		if(mCurenntPresentation != null){
 			if(mCurenntPresentation.getName().equals(Utils.musicPresentationName)){
 				AudioPlayerPrez prez = (AudioPlayerPrez)mCurenntPresentation;
-				prez.startAudioPlayer();
+				prez.startAudioPlayer(item);
 			}
 		}
 	}

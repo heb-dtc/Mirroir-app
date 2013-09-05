@@ -8,6 +8,8 @@ import android.media.MediaRouter;
 import android.media.MediaRouter.RouteInfo;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -63,6 +65,7 @@ public class DisplayActivity extends Activity {
         mListView.setOnItemClickListener(displayListListener);
     }
     
+    @Override
     protected void onResume() {
         super.onResume();
         mDisplayListAdapter.updateContents();
@@ -78,12 +81,30 @@ public class DisplayActivity extends Activity {
     	RemoteDisplayManager.INSTANCE.hideStandByPresentation();
     }
     
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.display, menu);
+        
+		return super.onCreateOptionsMenu(menu);
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	switch (item.getItemId()) {
+	        case R.id.action_refresh:
+	        	mDisplayListAdapter.updateContents();
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+    	}
+    }
+    
     private OnItemClickListener displayListListener = new OnItemClickListener() {
 
 		@Override
 		public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 			RouteInfo info = mDisplayListAdapter.getItem(position);
-			if(!RemoteDisplayManager.getInstance().isCurrentRoute(info)){
+			if(!RemoteDisplayManager.INSTANCE.isCurrentRoute(info)){
 				makeConnection(info);
 			}
 		}
@@ -124,7 +145,8 @@ public class DisplayActivity extends Activity {
             
             if(RemoteDisplayManager.INSTANCE.isLocalRoute(info))
             	tv.setTextColor(Color.parseColor("#cc0066"));
-            else if(RemoteDisplayManager.INSTANCE.isCurrentRoute(info))
+            
+            if(RemoteDisplayManager.INSTANCE.isCurrentRoute(info))
             	tv.setTextColor(Color.parseColor("#4f9b7a"));
 
             //CAPABILITIES
@@ -144,6 +166,7 @@ public class DisplayActivity extends Activity {
         }
         
         public void updateContents() {
+        	Log.d(TAG, "update content");
             clear();
             addAll(RemoteDisplayManager.INSTANCE.getAllRoutes());
         }

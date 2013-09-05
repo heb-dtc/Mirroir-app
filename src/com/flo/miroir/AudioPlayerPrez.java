@@ -21,10 +21,8 @@ public class AudioPlayerPrez extends RemotePresentation{
 	private MediaPlayer mPlayer;
 	private PlayerAsyncTask mPlayerAsyncTask;
 	
-	//URI 
-	//private static String mHighQualityStreamURI = "http://broadcast.infomaniak.ch/radionova-high.mp3";
-	private static String mLowQualityStreamURI = "http://broadcast.infomaniak.ch/radionova-low.mp3";
-	
+	private boolean mIsPaused = false;
+	private ContentDetails mCurrentContent;
 	
 	public AudioPlayerPrez(Context outerContext, Display display) {
 		super(outerContext, display);
@@ -63,10 +61,10 @@ public class AudioPlayerPrez extends RemotePresentation{
 	}
 		
 	private void startRadio(){
-    	if(mPlayer != null){
+    	if(mPlayer != null && mCurrentContent != null){
 			try {
 				mPlayer.reset();
-				mPlayer.setDataSource(mCtx, Uri.parse(mLowQualityStreamURI));
+				mPlayer.setDataSource(mCtx, Uri.parse(mCurrentContent.getFilePath()));
 		    	
 		    	mPlayer.prepare();
 		    	mPlayer.start();
@@ -91,10 +89,9 @@ public class AudioPlayerPrez extends RemotePresentation{
     }
 	
 	private void resumeRadio(){
-    	if(mPlayer != null){
-    		if(mPlayer.isPlaying()){
+    	if(mPlayer != null && mIsPaused){
     			mPlayer.start();
-    		}
+    			mIsPaused = false;
     	}
     }
 	
@@ -102,6 +99,7 @@ public class AudioPlayerPrez extends RemotePresentation{
     	if(mPlayer != null){
     		if(mPlayer.isPlaying()){
     			mPlayer.pause();
+    			mIsPaused = true;
     		}
     	}
     }
@@ -141,7 +139,9 @@ public class AudioPlayerPrez extends RemotePresentation{
 	 * 
 	 */
 	
-	public void startAudioPlayer(){
+	public void startAudioPlayer(ContentDetails item){
+		mCurrentContent = item;
+		
 		mPlayerAsyncTask = new PlayerAsyncTask();
 		mPlayerAsyncTask.execute();
 	}

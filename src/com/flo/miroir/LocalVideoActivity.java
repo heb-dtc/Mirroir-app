@@ -42,6 +42,8 @@ public class LocalVideoActivity extends Activity{
 	private Cursor mCursorVideoStore;
 	private ArrayList<ContentDetails> mVideoDetailsList = null;
 	
+	private ReadDataTask mReadDataTask;
+	
 	private int mCurrentPosInList = -1;
 	
     @Override
@@ -85,16 +87,17 @@ public class LocalVideoActivity extends Activity{
     protected void onDestroy() {
     	Log.e(TAG, "onDestroy");
     	super.onDestroy();
+    	
+    	//clean
+    	if(mReadDataTask != null){
+    		mReadDataTask.cancel(true);
+    	}
     }
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         
-        /*MenuItem mediaRouteMenuItem = menu.findItem(R.id.menu_media_route);
-        MediaRouteActionProvider mediaRouteActionProvider = (MediaRouteActionProvider)mediaRouteMenuItem.getActionProvider();
-        mediaRouteActionProvider.setRouteTypes(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
-        */
 		return true;
     }
     
@@ -104,7 +107,7 @@ public class LocalVideoActivity extends Activity{
 			updateVideoPrez(position);
 		}
     };
-    
+
     /**
      * 
      * Create and set the adapter for the ListView.
@@ -170,8 +173,8 @@ public class LocalVideoActivity extends Activity{
      * 
      */
     private void readPhoneMediaDataAsync(){
-		ReadDataTask readDataTask = new ReadDataTask();
-		readDataTask.execute();
+		mReadDataTask = new ReadDataTask();
+		mReadDataTask.execute();
     }
 	
     private void updateVideoPrez(int position){
@@ -266,11 +269,16 @@ public class LocalVideoActivity extends Activity{
 		
         @Override
 		protected Boolean doInBackground(Void... params) {
-        	setProgressBarIndeterminateVisibility(true);   
+        	setProgressBarIndeterminateVisibility(true); 
+        	
+        	boolean keepGoing = true;
         	
         	mCursorVideoStore = getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mVideoMediaColumns, null, null, null);
         	if (mCursorVideoStore.moveToFirst()) {
         		do {
+        			if(isCancelled())
+        				keepGoing = false;
+        			
         			//get local media info
                     ContentDetails item = collectLocalVideoMediaInfo();
                     
@@ -283,8 +291,9 @@ public class LocalVideoActivity extends Activity{
                     mVideoDetailsList.add(item);
                     //publish --> update UI
                     publishProgress(item);
-        		}while (mCursorVideoStore.moveToNext());
+        		}while (mCursorVideoStore.moveToNext() && keepGoing);
         	}
+        	
 			return true;
 		}
         
@@ -296,6 +305,12 @@ public class LocalVideoActivity extends Activity{
         @Override
         protected void onPostExecute(Boolean success) {
 			setProgressBarIndeterminateVisibility(false);   
+        }
+        
+        @Override
+        protected void onCancelled() {
+        	setProgressBarIndeterminateVisibility(false);
+        	super.onCancelled();
         }
     }
 	

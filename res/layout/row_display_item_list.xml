@@ -8,13 +8,14 @@
 	    android:id="@+id/display_icon" 
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
-		android:src="@drawable/default_video_background"
+		android:layout_marginLeft="20dp"
+		android:src="@drawable/remote_display"
 		android:contentDescription="@string/img_desc"/>
     
 	<LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="20dip"
+        android:layout_marginLeft="20dp"
         android:gravity="center_vertical"
         android:orientation="vertical" >
 

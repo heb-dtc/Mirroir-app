@@ -51,6 +51,7 @@ public class LocalMusicActivity extends Activity{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_local_video);
         
@@ -240,10 +241,7 @@ public class LocalMusicActivity extends Activity{
 						} catch (FileNotFoundException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-					}
+						}
 					}
 					info.setArtist(cursorAlbums.getString(cursorAlbums.getColumnIndexOrThrow(MediaStore.Audio.Albums.ARTIST)));
 		            Log.v("collectLocalAudioAlbumsInfo", "artist " + info.getArtist());
