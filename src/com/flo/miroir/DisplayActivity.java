@@ -83,7 +83,9 @@ public class DisplayActivity extends Activity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 			RouteInfo info = mDisplayListAdapter.getItem(position);
-			makeConnection(info);
+			if(!RemoteDisplayManager.getInstance().isCurrentRoute(info)){
+				makeConnection(info);
+			}
 		}
 	};
     
