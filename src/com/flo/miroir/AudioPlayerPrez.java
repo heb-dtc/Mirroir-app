@@ -4,24 +4,24 @@ import java.io.IOException;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Display;
 import android.widget.TextView;
 
-public class AudioPlayerPrez extends RemotePresentation{
+public class AudioPlayerPrez extends RemotePresentation implements OnCompletionListener {
 	
 	private final String TAG = this.getClass().getName();
 
 	private Context mCtx;
+	private Handler mHandler;
 	private TextView mSongNameView;
 	
 	private MediaPlayer mPlayer;
-	private PlayerAsyncTask mPlayerAsyncTask;
-	
-	private boolean mIsPaused = false;
 	private ContentDetails mCurrentContent;
 	
 	public AudioPlayerPrez(Context outerContext, Display display) {
@@ -36,12 +36,15 @@ public class AudioPlayerPrez extends RemotePresentation{
         Log.e(TAG, "Create audio prez");
 		
 		super.onCreate(savedInstanceState);
-
+		
+		mHandler = new Handler();
+		
         setContentView(R.layout.prez_audio_player);
         mSongNameView = (TextView) findViewById(R.id.song_title_view);
         mSongNameView.setText("blablablablalba");  
         
         mPlayer = new MediaPlayer();
+        mPlayer.setOnCompletionListener(this);
     }
 	
 	@Override
@@ -60,6 +63,24 @@ public class AudioPlayerPrez extends RemotePresentation{
 		Log.e(TAG, "onDisplayRemoved");
 	}
 		
+	private void updateProgressBar() {
+        mHandler.postDelayed(mUpdateTimeTask, 100);
+    }
+	
+	private Runnable mUpdateTimeTask = new Runnable() {
+        public void run() {
+            long totalDuration = mPlayer.getDuration();
+            long currentDuration = mPlayer.getCurrentPosition();
+
+            // Updating progress bar
+            int progress = (int)(Utils.getProgressPercentage(currentDuration, totalDuration));
+            getListener().onProgressChanged(progress);
+            
+            // Running this thread after 100 milliseconds
+            mHandler.postDelayed(this, 100);
+        }
+     };
+	
 	private void startRadio(){
     	if(mPlayer != null && mCurrentContent != null){
 			try {
@@ -68,6 +89,8 @@ public class AudioPlayerPrez extends RemotePresentation{
 		    	
 		    	mPlayer.prepare();
 		    	mPlayer.start();
+		    	
+		    	updateProgressBar();
 			}
 			catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
@@ -89,9 +112,8 @@ public class AudioPlayerPrez extends RemotePresentation{
     }
 	
 	private void resumeRadio(){
-    	if(mPlayer != null && mIsPaused){
+    	if(mPlayer != null && !mPlayer.isPlaying()){
     			mPlayer.start();
-    			mIsPaused = false;
     	}
     }
 	
@@ -99,7 +121,6 @@ public class AudioPlayerPrez extends RemotePresentation{
     	if(mPlayer != null){
     		if(mPlayer.isPlaying()){
     			mPlayer.pause();
-    			mIsPaused = true;
     		}
     	}
     }
@@ -107,31 +128,11 @@ public class AudioPlayerPrez extends RemotePresentation{
 	private void stopRadio(){
     	if(mPlayer != null){
     		if(mPlayer.isPlaying()){
+    			mHandler.removeCallbacks(mUpdateTimeTask);
     			mPlayer.stop();
     		}
     	}
     }
-	
-	/*
-	 * 
-	 * ASYNC TASK FOR MEDIA PLAYER
-	 * 
-	 */
-	private class PlayerAsyncTask extends AsyncTask<Void, Void, Void> {	
-		@Override
-		public void onPreExecute(){
-	 	}
-		
-		@Override
-		protected Void doInBackground(Void...params) {
-			startRadio();
-			return null;
-		}
-		
-		@Override
-		public void onPostExecute(Void res) {
-		}
-	}
 
 	/*
 	 * 
@@ -142,8 +143,9 @@ public class AudioPlayerPrez extends RemotePresentation{
 	public void startAudioPlayer(ContentDetails item){
 		mCurrentContent = item;
 		
-		mPlayerAsyncTask = new PlayerAsyncTask();
-		mPlayerAsyncTask.execute();
+		//mPlayerAsyncTask = new PlayerAsyncTask();
+		//mPlayerAsyncTask.execute();
+		startRadio();
 	}
 	
 	public void pauseAudioPlayer(){
@@ -156,5 +158,12 @@ public class AudioPlayerPrez extends RemotePresentation{
 	
 	public void stopAudioPlayer(){
 		stopRadio();
+	}
+
+	@Override
+	public void onCompletion(MediaPlayer mp) {
+		Log.d(TAG, "onCompletion");
+		getListener().onPlaybackCompleted();
+		//mHandler.removeCallbacks(mUpdateTimeTask);
 	}
 }

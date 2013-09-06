@@ -37,13 +37,6 @@ public enum RemoteDisplayManager {
 		mCurrentRouteSelected = mMediaRouter.getSelectedRoute(MediaRouter.ROUTE_TYPE_LIVE_VIDEO);
 	}
 	
-	/*public static RemoteDisplayManager getInstance(){
-		if(mInstance == null){
-			mInstance = new RemoteDisplayManager();
-		}
-		return mInstance;
-	}*/
-	
 	public void subscribeToCallabcks(IRemoteDisplayCallbacks listener){
 		mSubscriberList.add(listener);
 	}
@@ -69,7 +62,7 @@ public enum RemoteDisplayManager {
 	        		}
 	        		mCurenntPresentation = prez;
 	        		mCurenntPresentation.show();
-	        		//mContext = c;
+
 	        		success = true;
 	        	}
 	        }
@@ -103,7 +96,7 @@ public enum RemoteDisplayManager {
 	        		}
 	        		mCurenntPresentation = prez;
 	        		mCurenntPresentation.show();
-	        		//mContext = c;
+
 	        		success = true;
 	        	}
 	        }
@@ -116,6 +109,14 @@ public enum RemoteDisplayManager {
 		if(mCurenntPresentation != null){
 			if(mCurenntPresentation.getName().equals(Utils.musicPresentationName)){
 				mCurenntPresentation.cancel();
+			}
+		}
+	}
+	
+	public void registerAudioPlayerCallback(IPrezCallbacks cb){
+		if(mCurenntPresentation != null){
+			if(mCurenntPresentation.getName().equals(Utils.musicPresentationName)){
+				mCurenntPresentation.setListener(cb);
 			}
 		}
 	}
@@ -137,7 +138,7 @@ public enum RemoteDisplayManager {
 	        		}
 	        		mCurenntPresentation = prez;
 	        		mCurenntPresentation.show();
-	        		//mContext = c;
+
 	        		success = true;
 	        	}
 	        }
@@ -171,7 +172,7 @@ public enum RemoteDisplayManager {
 	        		}
 	        		mCurenntPresentation = prez;
 	        		mCurenntPresentation.show();
-	        		//mContext = c;
+
 	        		success = true;
 	        	}
 	        }
@@ -336,7 +337,7 @@ public enum RemoteDisplayManager {
 		if(mCurenntPresentation != null){
 			if(mCurenntPresentation.getName().equals(Utils.musicPresentationName)){
 				AudioPlayerPrez prez = (AudioPlayerPrez)mCurenntPresentation;
-				prez.resumeAudioPlayer();
+				prez.pauseAudioPlayer();
 			}
 		}
 	}
@@ -360,6 +361,15 @@ public enum RemoteDisplayManager {
 			if(mCurenntPresentation.getName().equals(Utils.videoPresentationName)){
 				VideoPlayerPrez prez = (VideoPlayerPrez)mCurenntPresentation;
 				prez.pauseVideoPlayer();
+			}
+		}
+	}
+	
+	public void resumeVideoPlayer(){
+		if(mCurenntPresentation != null){
+			if(mCurenntPresentation.getName().equals(Utils.videoPresentationName)){
+				VideoPlayerPrez prez = (VideoPlayerPrez)mCurenntPresentation;
+				prez.resumeVideoPlayer();
 			}
 		}
 	}

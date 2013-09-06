@@ -35,13 +35,16 @@ public class LocalVideoActivity extends Activity{
 	private final String TAG = this.getClass().getName();
 	
 	private ListView mListView = null;
+	private ContentRowAdapter mVideoAdapter;
 	private View mPlaybakControlView = null;
-	private ImageView mVideoThumbnailView;
-	private ImageButton mPlayButton;
+	
+	//PCV controls
+	private ImageView mPcvVideoThumbnailView;
+	private ImageButton mPcvPlayButton;
+	private TextView mPcvVideoName;
 	/*private Button mStopButton;
 	private Button mPreviousButton;
 	private Button mNextButton;*/
-	private ContentRowAdapter mVideoAdapter;
 	
 	private Cursor mCursorVideoStore;
 	private ArrayList<ContentDetails> mVideoDetailsList = null;
@@ -64,11 +67,12 @@ public class LocalVideoActivity extends Activity{
 
         mListView = (ListView)findViewById(R.id.list_view);
         mPlaybakControlView = (View) findViewById(R.id.playback_controls_view);
-        mPlayButton = (ImageButton) findViewById(R.id.btn_play_video);
+        mPcvPlayButton = (ImageButton) findViewById(R.id.pcv_btn_play_video);
         /*mStopButton = (Button) findViewById(R.id.btn_stop_video);
         mPreviousButton = (Button) findViewById(R.id.btn_previous_video);
         mNextButton = (Button) findViewById(R.id.btn_next_video);*/
-        mVideoThumbnailView = (ImageView) findViewById(R.id.img_view_video_tm);
+        mPcvVideoThumbnailView = (ImageView) findViewById(R.id.pcv_video_tn);
+        mPcvVideoName = (TextView) findViewById(R.id.pcv_video_name);
         
         mVideoDetailsList = new ArrayList<ContentDetails>();
 
@@ -87,6 +91,8 @@ public class LocalVideoActivity extends Activity{
     @Override
     protected void onPause() {
     	super.onPause();
+    	
+    	RemoteDisplayManager.INSTANCE.stopVideoPlayer();
     	RemoteDisplayManager.INSTANCE.hideVideoPlayerPresentation();
     }
     
@@ -123,16 +129,20 @@ public class LocalVideoActivity extends Activity{
     private void initUI(){
     	mListView.setOnItemClickListener(mListItemClickListener);
     	
-    	mPlayButton.setOnClickListener(new OnClickListener() {
+    	mPcvPlayButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(mIsPaused)
-					mPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.play_light));
-				else
-					mPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.pause_light));
+				if(mIsPaused){
+					mPcvPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.pause_light));
+					RemoteDisplayManager.INSTANCE.resumeVideoPlayer();
+					mIsPaused = false;
+				}
+				else{
+					mPcvPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.play_light));
+					RemoteDisplayManager.INSTANCE.pauseVideoPlayer();
+					mIsPaused = true;
+				}
 				
-				RemoteDisplayManager.INSTANCE.pauseVideoPlayer();
-				mIsPaused = !mIsPaused;
 			}
 		});
     	
@@ -201,8 +211,14 @@ public class LocalVideoActivity extends Activity{
 			//add playback controls to UI
 			mPlaybakControlView.setVisibility(View.VISIBLE);
 			
+			//update TN
 			if(item.getThumbnail() != null)
-				mVideoThumbnailView.setImageBitmap(item.getThumbnail());
+				mPcvVideoThumbnailView.setImageBitmap(item.getThumbnail());
+			//update video name
+			mPcvVideoName.setText(item.getTitle());
+			
+			mPcvPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.pause_light));
+			mIsPaused = false;
 		}
     }
     
@@ -228,8 +244,8 @@ public class LocalVideoActivity extends Activity{
 		info.setSize(mCursorVideoStore.getString(mCursorVideoStore.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)));
 		Log.v(TAG, "size " + info.getSize());
 		
-		info.setDurationMediaStore(mCursorVideoStore.getString(mCursorVideoStore.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)));
-	    Log.v(TAG, "duration " + info.getDurationMediaStore());
+		info.setDuration(mCursorVideoStore.getString(mCursorVideoStore.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)));
+	    Log.v(TAG, "duration " + info.getDuration());
 	        			
 	    info.setResolution(mCursorVideoStore.getString(mCursorVideoStore.getColumnIndexOrThrow(MediaStore.Video.Media.RESOLUTION)));
 	    Log.v(TAG, "resolution " + info.getResolution());
@@ -298,7 +314,7 @@ public class LocalVideoActivity extends Activity{
         			//get local media info
                     ContentDetails item = collectLocalVideoMediaInfo();
                     
-                    Long duration =  Long.valueOf(item.getDurationMediaStore());
+                    Long duration =  Long.valueOf(item.getDuration());
     				duration++;
     				Long framePosition = duration*200;
     				extractThumbnail(item, framePosition);
@@ -389,7 +405,7 @@ public class LocalVideoActivity extends Activity{
 			type.setText(item.getMimeType());
 			
 			TextView durationMediaStore = (TextView) contentRow.findViewById(R.id.content_duration_media_store);
-			durationMediaStore.setText(item.getDurationMediaStore());
+			durationMediaStore.setText(item.getDuration());
 			
 			return contentRow;
 		}

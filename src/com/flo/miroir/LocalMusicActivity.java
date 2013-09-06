@@ -29,15 +29,24 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
-public class LocalMusicActivity extends Activity{
+public class LocalMusicActivity extends Activity implements IPrezCallbacks{
 
 	private final String TAG = this.getClass().getName();
 	
 	private ListView mListView = null;
 	private View mPlaybakControlView = null;
-	private ImageButton mPlayButton;
+	private View mPlaybakControlViewBottom = null;
+	
+	//PCV controls
+	private ImageView mPcvAlbumThumbnailView;
+	private ImageButton mPcvPlayButton;
+	private TextView mPcvSongName;
+	private TextView mPcvArtistName;
+	private SeekBar mPcvProgressBar;
+	
 	/*private Button mStopButton;
 	private Button mPreviousButton;
 	private Button mNextButton;*/
@@ -63,7 +72,14 @@ public class LocalMusicActivity extends Activity{
         
         mListView = (ListView)findViewById(R.id.list_view);
         mPlaybakControlView = (View) findViewById(R.id.playback_controls_view);
-        mPlayButton = (ImageButton) findViewById(R.id.btn_play_video);
+        mPlaybakControlViewBottom = (View) findViewById(R.id.pcv_bottom_view);
+        
+        mPcvPlayButton = (ImageButton) findViewById(R.id.pcv_btn_play);
+        mPcvSongName = (TextView) findViewById(R.id.pcv_song_name);
+        mPcvArtistName = (TextView) findViewById(R.id.pcv_artist_name);
+        mPcvProgressBar = (SeekBar) findViewById(R.id.pcv_seek_bar);
+        mPcvAlbumThumbnailView = (ImageView)findViewById(R.id.pcv_album_tn);
+        
         /*mStopButton = (Button) findViewById(R.id.btn_stop_video);
         mPreviousButton = (Button) findViewById(R.id.btn_previous_video);
         mNextButton = (Button) findViewById(R.id.btn_next_video);*/
@@ -76,37 +92,39 @@ public class LocalMusicActivity extends Activity{
     } 
 	
 	 @Override
-	    protected void onResume() {
-	        // Be sure to call the super class.
-	        super.onResume();
-	        RemoteDisplayManager.INSTANCE.displayAudioPresentation(this);
-	    }
+	 protected void onResume() {
+		 // Be sure to call the super class.
+		 super.onResume();
+		 RemoteDisplayManager.INSTANCE.displayAudioPresentation(this);
+		 RemoteDisplayManager.INSTANCE.registerAudioPlayerCallback(this);
+	 }
 		
-	    @Override
-	    protected void onPause() {
-	    	super.onPause();
-	    	RemoteDisplayManager.INSTANCE.hideAudioPlayerPresentation();
-	    }
+	 @Override
+	 protected void onPause() {
+		 super.onPause();
+		 RemoteDisplayManager.INSTANCE.stopAudioPlayer();
+		 RemoteDisplayManager.INSTANCE.hideAudioPlayerPresentation();
+	 }
 	    
-	    @Override
-	    protected void onDestroy() {
-	    	Log.e(TAG, "onDestroy");
-	    	super.onDestroy();
-	    }
+	 @Override
+	 protected void onDestroy() {
+		 Log.e(TAG, "onDestroy");
+		 super.onDestroy();
+	 }
 	    
-	    @Override
-	    public boolean onCreateOptionsMenu(Menu menu) {
-	        getMenuInflater().inflate(R.menu.main, menu);
+	 @Override
+	 public boolean onCreateOptionsMenu(Menu menu) {
+		 getMenuInflater().inflate(R.menu.main, menu);
 
-			return true;
-	    }
+		 return true;
+	 }
 	    
-	    private OnItemClickListener mListItemClickListener = new OnItemClickListener(){
-			@Override
-			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-				updateAudioPrez(position);
-			}
-	    };
+	 private OnItemClickListener mListItemClickListener = new OnItemClickListener(){
+		 @Override
+		 public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+			 updateAudioPrez(position);
+		 }
+	 };
 	    
 	    /**
 	     * 
@@ -116,16 +134,19 @@ public class LocalMusicActivity extends Activity{
 	    private void initUI(){
 	    	mListView.setOnItemClickListener(mListItemClickListener);
 	    	
-	    	mPlayButton.setOnClickListener(new OnClickListener() {
+	    	mPcvPlayButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					if(mIsPaused)
-						mPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.play_light));
-					else
-						mPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.pause_light));
-					
-					RemoteDisplayManager.INSTANCE.pauseAudioPlayer();
-					mIsPaused = !mIsPaused;
+					if(mIsPaused){
+						mPcvPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.pause_light));
+						RemoteDisplayManager.INSTANCE.resumeAudioPlayer();
+						mIsPaused = false;
+					}
+					else{
+						mPcvPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.play_light));
+						RemoteDisplayManager.INSTANCE.pauseAudioPlayer();
+						mIsPaused = true;
+					}
 				}
 			});
 	    	
@@ -183,8 +204,15 @@ public class LocalMusicActivity extends Activity{
 			readDataTask.execute();
 	    }
 	    
+	    private void playNext(){
+	    	int pos = mCurrentPosInList+1;
+			if(pos >=0 && pos < mAudioDetailsList.size()){
+				updateAudioPrez(pos);
+			}
+	    }
+	    
 	    private void updateAudioPrez(int position){
-	    	Log.d(TAG, "updateVideoPrez: " + position);
+	    	Log.d(TAG, "updateAudioPrez: " + position);
 
 			if(position >= 0 && position < mAudioDetailsList.size()){
 				ContentDetails item = mAudioDetailsList.get(position);
@@ -193,6 +221,22 @@ public class LocalMusicActivity extends Activity{
 				
 				//add playback controls to UI
 				mPlaybakControlView.setVisibility(View.VISIBLE);
+				mPlaybakControlViewBottom.setVisibility(View.VISIBLE);
+				
+				//update song and artist names
+				mPcvSongName.setText(item.getTitle());
+				mPcvArtistName.setText(item.getArtist());
+				
+				//update AA
+				if(item.getThumbnail() != null)
+					mPcvAlbumThumbnailView.setImageBitmap(item.getThumbnail());
+				
+				mPcvPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.pause_light));
+				mIsPaused = false;
+				
+				//init progress bar
+				mPcvProgressBar.setProgress(0);
+				mPcvProgressBar.setMax(100);
 			}
 	    }
 	    
@@ -203,60 +247,15 @@ public class LocalMusicActivity extends Activity{
 	    		MediaStore.Audio.Media.MIME_TYPE,
 	    		MediaStore.Audio.Media.SIZE,
 	    		MediaStore.Audio.Media.DURATION,
-	    		MediaStore.Audio.Media.ARTIST
+	    		MediaStore.Audio.Media.ARTIST,
+	    		MediaStore.Audio.Media.ALBUM_ID
 	    		};
 		
 		String[] mAudioAlbumColumns = {
 	    		MediaStore.Audio.Albums._ID,
-	    		MediaStore.Audio.Albums.ALBUM_ART,
-	    		MediaStore.Audio.Albums.ARTIST,
-	    		MediaStore.Audio.Albums.ALBUM
+	    		MediaStore.Audio.Albums.ALBUM_ART
 	    		};
-		
-		private ContentDetails collectLocalAudioAlbumsInfo() {
-			Cursor cursorAlbums = getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI, mAudioAlbumColumns, null, null, null);
-			
-			if (cursorAlbums.moveToFirst()) {
-        		do {
-			
-					ContentDetails info = new ContentDetails("");
-		    		
-		    		info.setTitle(cursorAlbums.getString(cursorAlbums.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM)));
-					Log.v("collectLocalAudioAlbumsInfo", "Title " + info.getTitle());
-						
-					
-					String aaUri = cursorAlbums.getString(cursorAlbums.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM_ART));
-					
-					if(aaUri != null){
-						Log.v("collectLocalAudioAlbumsInfo", "aaUri " + aaUri);
-						
-						Uri artworkUri = Uri.parse(aaUri);
-						
-						Bitmap bitmap;
-						try {
-							InputStream in = null;
-				            in = getContentResolver().openInputStream(artworkUri);
-				            bitmap = BitmapFactory.decodeStream(in);
-							//bitmap = MediaStore.Audio.Media.getBitmap(getContentResolver(), artworkUri);
-							//bitmap
-							if(bitmap != null){
-								Log.v("collectLocalAudioAlbumsInfo", "bitmap set ");
-		                    	info.setThumbnail(bitmap);
-		                    }
-						} catch (FileNotFoundException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-					info.setArtist(cursorAlbums.getString(cursorAlbums.getColumnIndexOrThrow(MediaStore.Audio.Albums.ARTIST)));
-		            Log.v("collectLocalAudioAlbumsInfo", "artist " + info.getArtist());
-					
-        		}while (cursorAlbums.moveToNext());
-			}
-			
-			return null;
-		}
-		
+
 		private ContentDetails collectLocalAudioMediaInfo() {
 			ContentDetails info = new ContentDetails(mCursorAudioStore.getString(mCursorAudioStore.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)));
     		
@@ -269,12 +268,31 @@ public class LocalMusicActivity extends Activity{
 			info.setSize(mCursorAudioStore.getString(mCursorAudioStore.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)));
 			Log.v(TAG, "size " + info.getSize());
 
-			info.setDurationMediaStore(mCursorAudioStore.getString(mCursorAudioStore.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)));
-            Log.v(TAG, "duration " + info.getDurationMediaStore());
+			info.setDuration(mCursorAudioStore.getString(mCursorAudioStore.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)));
+            Log.v(TAG, "duration " + info.getDuration());
             
 			info.setArtist(mCursorAudioStore.getString(mCursorAudioStore.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)));
             Log.v(TAG, "artist " + info.getArtist());
-			
+            
+            //try to get potential AA
+            String albId = mCursorAudioStore.getString(mCursorAudioStore.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID));
+            Log.v(TAG, "Album ID: " + albId);
+            
+            Cursor cursorAlbum = getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI, mAudioAlbumColumns,
+            		MediaStore.Audio.Albums._ID+ "=" + albId, null, null);
+            
+            if(cursorAlbum != null  && cursorAlbum.moveToFirst()){
+
+              String uri = cursorAlbum.getString(cursorAlbum.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+              cursorAlbum.close();
+              
+              if(uri != null ){    
+            	  //info.setThumbnail(BitmapFactory.decodeFile(uri));
+            	  info.setThumbnail(Utils.decodeSampledBitmapFromUri(uri, 48, 48));
+            	  Log.v(TAG, "AA: " + uri);
+              }
+            } 
+            
 			Log.v(TAG, "collectLocalAudioMediaInfo " + info.getFilePath());
 			
 			return info;
@@ -293,8 +311,6 @@ public class LocalMusicActivity extends Activity{
 	        @Override
 			protected Boolean doInBackground(Void... params) {
 	        	setProgressBarIndeterminateVisibility(true);   
-	        	
-	        	collectLocalAudioAlbumsInfo();
 	        	
 	        	mCursorAudioStore = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mAudioMediaColumns, 
 	        			MediaStore.Audio.Media.IS_MUSIC + "=1", null, null);
@@ -384,4 +400,19 @@ public class LocalMusicActivity extends Activity{
 				return contentRow;
 			}
 	    }
+
+	@Override
+	public void onProgressChanged(int value) {
+		Log.e(TAG, "onProgressChanged: " + value);
+		
+		if(mPcvProgressBar.getProgress() != value){
+			mPcvProgressBar.setProgress(value);
+		}
+	}
+
+	@Override
+	public void onPlaybackCompleted() {
+		Log.e(TAG, "onPlaybackCompleted");
+		playNext();
+	}
 }

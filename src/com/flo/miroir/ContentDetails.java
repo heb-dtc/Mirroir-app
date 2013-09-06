@@ -8,7 +8,7 @@ public class ContentDetails {
 	private String mMimeType = null;
 	private String mTitle = null;
 	private String mArtist = null;
-	private String mDurationMediaStore = null;
+	private String mDuration = null;
 	private String mResolution = null;
 	private String mSize = null;
 	private Bitmap mThumbnail = null;
@@ -19,7 +19,7 @@ public class ContentDetails {
 		mMimeType = "type/unknown";
 		mTitle = "Unknown";
 		mArtist = "Unknown";
-		mDurationMediaStore = "0";
+		mDuration = "0";
 		mResolution = "0";
 		mSize = "0";
 	}
@@ -40,8 +40,8 @@ public class ContentDetails {
 		return mArtist;
 	}
 	
-	public String getDurationMediaStore(){
-		return mDurationMediaStore;
+	public String getDuration(){
+		return mDuration;
 	}
 	
 	public String getResolution(){
@@ -68,8 +68,8 @@ public class ContentDetails {
 		mArtist = value;
 	}
 	
-	public void setDurationMediaStore(String value){
-		mDurationMediaStore = value;
+	public void setDuration(String value){
+		mDuration = value;
 	}
 	
 	public void setResolution(String value){

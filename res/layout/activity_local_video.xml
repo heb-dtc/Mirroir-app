@@ -4,32 +4,68 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/light_grey" >
-
-   	<RelativeLayout
-	    android:id="@+id/playback_controls_view"
+    
+    <LinearLayout 
+        android:id="@+id/playback_controls_view"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
 	    android:layout_alignParentBottom="true"
-	    android:background="@color/dark_grey" >
+	    android:background="@color/dark_grey"
+	    android:orientation="vertical">
 	    
-   	    <ImageView 
-   	        android:padding="5dp"
-   	        android:id="@+id/img_view_video_tm"
-   	        android:layout_height="wrap_content"
-	        android:layout_width="wrap_content"
-	        android:src="@drawable/default_video_background"/>
+        <!-- names of the view ends with pcv=playback_control_view --> 
 
-	   	<ImageButton
-	   	    android:id="@+id/btn_play_video"
-	   	    android:layout_width="wrap_content"
-	   	    android:layout_height="wrap_content"
-	   	    android:layout_alignParentRight="true"
-	   	    android:layout_centerVertical="true"
-	   	    android:background="@color/dark_grey"
-	   	    android:layout_marginRight="15dp"
-	   	    android:src="@drawable/pause_light" />
+        <RelativeLayout
+	    android:id="@+id/pcv_top_view"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent">
+	   
+	   	    <ImageView 
+	   	        android:padding="5dp"
+	   	        android:id="@+id/pcv_video_tn"
+	   	        android:layout_height="wrap_content"
+		        android:layout_width="wrap_content"
+		        android:src="@drawable/default_video_background"/>
+		   	    
+		   	<ImageButton
+		   	    android:id="@+id/pcv_btn_play_video"
+		   	    android:layout_width="wrap_content"
+		   	    android:layout_height="wrap_content"
+		   	    android:layout_alignParentRight="true"
+		   	    android:layout_centerVertical="true"
+		   	    android:background="@color/dark_grey"
+		   	    android:layout_marginRight="15dp"
+		   	    android:src="@drawable/pause_light" />
+		   	
+		   	<TextView 
+	   	        android:id="@+id/pcv_video_name"
+	   	        android:layout_width="fill_parent"
+	   	        android:layout_height="wrap_content"
+	   	        android:textColor="@android:color/white"
+	   	        android:layout_marginLeft="15dp"
+	   	        android:text="Unknown video"
+	   	        android:layout_centerVertical="true"
+	   	        android:layout_toRightOf="@id/pcv_video_tn"
+	   	        android:layout_toLeftOf="@id/pcv_btn_play_video"/>
 	   		
-	</RelativeLayout>
+		</RelativeLayout>
+		
+        <LinearLayout 
+           	android:id="@+id/pcv_bottom_view"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:visibility="gone"
+		    android:orientation="horizontal">
+            
+            <SeekBar 
+                android:id="@+id/pcv_seek_bar"
+                android:layout_margin="10dp"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"/>
+	        
+        </LinearLayout>
+        
+    </LinearLayout>
     
 	<ListView
 	    android:id="@+id/list_view" 

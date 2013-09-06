@@ -20,7 +20,6 @@ public class VideoPlayerPrez extends RemotePresentation {
 	
 	//private PlayerAsyncTask mPlayerAsyncTask;
 	
-	private boolean mIsPaused = false;
 	private ContentDetails mCurrentContent;
 	
 	public VideoPlayerPrez(Context outerContext, Display display) {
@@ -85,15 +84,15 @@ public class VideoPlayerPrez extends RemotePresentation {
 	
 	private void pausePlayer(){
 		if(mVideoView != null && mVideoView.isPlaying()){
+			Log.d(TAG, "pausePlayer");
 			mVideoView.pause();
-			mIsPaused = true;
 		}
 	}
 	
 	private void resumePlayer(){
-		if(mVideoView != null && mIsPaused){
-			mVideoView.resume();
-			mIsPaused = false;
+		if(mVideoView != null && !mVideoView.isPlaying()){
+			Log.d(TAG, "resumePlayer");
+			mVideoView.start();
 		}
 	}
 	
