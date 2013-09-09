@@ -28,20 +28,23 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
-public class LocalVideoActivity extends Activity{
+public class LocalVideoActivity extends Activity implements IPrezCallbacks, SeekBar.OnSeekBarChangeListener {
 
 	private final String TAG = this.getClass().getName();
 	
 	private ListView mListView = null;
 	private ContentRowAdapter mVideoAdapter;
 	private View mPlaybakControlView = null;
+	private View mPlaybakControlViewBottom = null;
 	
 	//PCV controls
 	private ImageView mPcvVideoThumbnailView;
 	private ImageButton mPcvPlayButton;
 	private TextView mPcvVideoName;
+	private SeekBar mPcvProgressBar;
 	/*private Button mStopButton;
 	private Button mPreviousButton;
 	private Button mNextButton;*/
@@ -53,6 +56,7 @@ public class LocalVideoActivity extends Activity{
 	
 	private int mCurrentPosInList = -1;
 	private boolean mIsPaused = false;
+	private boolean mUpdateSeekBar = true;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,11 +71,14 @@ public class LocalVideoActivity extends Activity{
 
         mListView = (ListView)findViewById(R.id.list_view);
         mPlaybakControlView = (View) findViewById(R.id.playback_controls_view);
+        mPlaybakControlViewBottom = (View) findViewById(R.id.pcv_bottom_view);
+        
         mPcvPlayButton = (ImageButton) findViewById(R.id.pcv_btn_play_video);
         /*mStopButton = (Button) findViewById(R.id.btn_stop_video);
         mPreviousButton = (Button) findViewById(R.id.btn_previous_video);
         mNextButton = (Button) findViewById(R.id.btn_next_video);*/
         mPcvVideoThumbnailView = (ImageView) findViewById(R.id.pcv_video_tn);
+        mPcvProgressBar = (SeekBar) findViewById(R.id.pcv_seek_bar);
         mPcvVideoName = (TextView) findViewById(R.id.pcv_video_name);
         
         mVideoDetailsList = new ArrayList<ContentDetails>();
@@ -86,6 +93,7 @@ public class LocalVideoActivity extends Activity{
         // Be sure to call the super class.
         super.onResume();
         RemoteDisplayManager.INSTANCE.displayVideoPresentation(this);
+        RemoteDisplayManager.INSTANCE.registerVideoPlayerCallback(this);
     }
 	
     @Override
@@ -128,6 +136,8 @@ public class LocalVideoActivity extends Activity{
      */
     private void initUI(){
     	mListView.setOnItemClickListener(mListItemClickListener);
+    	
+    	mPcvProgressBar.setOnSeekBarChangeListener(this);
     	
     	mPcvPlayButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -174,6 +184,7 @@ public class LocalVideoActivity extends Activity{
 		});*/
     	
     	mPlaybakControlView.setVisibility(View.GONE);
+    	mPlaybakControlViewBottom.setVisibility(View.GONE);
 
     	mVideoAdapter = new ContentRowAdapter(getApplicationContext());
     	mListView.setAdapter(mVideoAdapter);
@@ -199,6 +210,13 @@ public class LocalVideoActivity extends Activity{
 		mReadDataTask = new ReadDataTask();
 		mReadDataTask.execute();
     }
+    
+    private void playNext(){
+    	int pos = mCurrentPosInList+1;
+		if(pos >=0 && pos < mVideoDetailsList.size()){
+			updateVideoPrez(pos);
+		}
+    }
 	
     private void updateVideoPrez(int position){
     	Log.d(TAG, "updateVideoPrez: " + position);
@@ -210,6 +228,7 @@ public class LocalVideoActivity extends Activity{
 				
 			//add playback controls to UI
 			mPlaybakControlView.setVisibility(View.VISIBLE);
+			mPlaybakControlViewBottom.setVisibility(View.VISIBLE);
 			
 			//update TN
 			if(item.getThumbnail() != null)
@@ -219,6 +238,10 @@ public class LocalVideoActivity extends Activity{
 			
 			mPcvPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.pause_light));
 			mIsPaused = false;
+			
+			//init progress bar
+			mPcvProgressBar.setProgress(0);
+			mPcvProgressBar.setMax(100);
 		}
     }
     
@@ -410,4 +433,41 @@ public class LocalVideoActivity extends Activity{
 			return contentRow;
 		}
     }
+
+	@Override
+	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+		
+	}
+
+	@Override
+	public void onStartTrackingTouch(SeekBar seekBar) {
+		//stop updating the progress bar since the user is now moving it
+		mUpdateSeekBar = false;
+	}
+
+	@Override
+	public void onStopTrackingTouch(SeekBar seekBar) {
+		RemoteDisplayManager.INSTANCE.seekToVideoPlayer(seekBar.getProgress());
+		//keep updating the seek bar
+		mUpdateSeekBar = true;
+	}
+
+	@Override
+	public void onProgressChanged(int value) {
+		Log.e(TAG, "onProgressChanged: " + value);
+		
+		if(mPcvProgressBar.getProgress() != value && mUpdateSeekBar){
+			mPcvProgressBar.setProgress(value);
+		}
+	}
+
+	@Override
+	public void onPlaybackCompleted() {
+		Log.e(TAG, "onPlaybackCompleted");
+		//set the correct UI
+		mPcvPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.play_light));
+		mIsPaused = true;
+		
+		playNext();
+	}
 }

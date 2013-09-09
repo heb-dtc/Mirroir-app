@@ -1,7 +1,11 @@
 package com.flo.miroir;
 
 import android.content.Context;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
@@ -9,9 +13,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.VideoView;
 
-public class VideoPlayerPrez extends RemotePresentation {
+public class VideoPlayerPrez extends RemotePresentation implements OnCompletionListener, OnPreparedListener {
 
 	private final String TAG = this.getClass().getName();
+	
+	private Handler mHandler;
 	
 	//UI component
 	private TextView mVideoNameView;
@@ -24,6 +30,7 @@ public class VideoPlayerPrez extends RemotePresentation {
 	
 	public VideoPlayerPrez(Context outerContext, Display display) {
 		super(outerContext, display);
+		setName(Utils.videoPresentationName);
 	}
 	
 	@Override
@@ -31,13 +38,16 @@ public class VideoPlayerPrez extends RemotePresentation {
         Log.e(TAG, "Create Video prez");
 		super.onCreate(savedInstanceState);
 		
-		setName(Utils.videoPresentationName);
+		mHandler = new Handler();
 		
 		setContentView(R.layout.prez_video_player);
 		
 		mVideoView = (VideoView) findViewById(R.id.videoView);
 		mVideoNameView = (TextView) findViewById(R.id.video_name_view);
 		mImageView = (ImageView) findViewById(R.id.image_view);
+		
+		mVideoView.setOnCompletionListener(this);
+		mVideoView.setOnPreparedListener(this);
 	}
 	
 	@Override
@@ -66,7 +76,6 @@ public class VideoPlayerPrez extends RemotePresentation {
 			mVideoView.setVisibility(View.VISIBLE);
 			mVideoNameView.setVisibility(View.VISIBLE);
 			
-			
 			mVideoView.start();
 		}
 	}
@@ -93,8 +102,39 @@ public class VideoPlayerPrez extends RemotePresentation {
 		if(mVideoView != null && !mVideoView.isPlaying()){
 			Log.d(TAG, "resumePlayer");
 			mVideoView.start();
+			updateProgressBar();
 		}
 	}
+	
+	private void seekToPlayer(int pos){
+    	if(mVideoView != null){
+    		if(mVideoView.isPlaying()){
+    			int totalDuration = mVideoView.getDuration();
+    	        int currentPosition = Utils.progressToTimer(pos, totalDuration);
+    	        mVideoView.seekTo(currentPosition);
+    		}
+    	}
+    }
+	
+	private void updateProgressBar() {
+        mHandler.postDelayed(mUpdateTimeTask, 100);
+    }
+	
+	private Runnable mUpdateTimeTask = new Runnable() {
+        public void run() {
+            long totalDuration = mVideoView.getDuration();
+            long currentDuration = mVideoView.getCurrentPosition();
+
+            // Updating progress bar
+            int progress = (int)(Utils.getProgressPercentage(currentDuration, totalDuration));
+            getListener().onProgressChanged(progress);
+            
+            if(mVideoView.isPlaying()){
+	            // Running this thread after 100 milliseconds
+	            mHandler.postDelayed(this, 100);
+            }
+        }
+     };
 	
 	/*
 	 * 
@@ -104,7 +144,6 @@ public class VideoPlayerPrez extends RemotePresentation {
 	
 	public void startVideoPlayer(ContentDetails item){
 		mCurrentContent = item;
-
 		startPlayer();
 	}
 	
@@ -118,5 +157,21 @@ public class VideoPlayerPrez extends RemotePresentation {
 	
 	public void resumeVideoPlayer(){
 		resumePlayer();
+	}
+	
+	public void seekTo(int position){
+		seekToPlayer(position);
+	}
+
+	@Override
+	public void onCompletion(MediaPlayer arg0) {
+		Log.d(TAG, "onCompletion");
+		getListener().onPlaybackCompleted();
+	}
+
+	@Override
+	public void onPrepared(MediaPlayer mp) {
+		Log.d(TAG, "onPrepared");
+		updateProgressBar();
 	}
 }

@@ -7,8 +7,8 @@
     
     <ImageView 
 	    android:id="@+id/audio_album_img" 
-		android:layout_width="wrap_content"
-		android:layout_height="match_parent"
+		android:layout_width="80dp"
+		android:layout_height="80dp"
 		android:layout_marginLeft="20dp"
 		android:src="@drawable/default_video_background"
 		android:contentDescription="@string/img_desc"/>
@@ -25,7 +25,7 @@
         <TextView
             android:id="@+id/song_title"
             android:textColor="@android:color/black"
-            android:textSize="20sp"
+            android:textSize="15sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/content_title" />

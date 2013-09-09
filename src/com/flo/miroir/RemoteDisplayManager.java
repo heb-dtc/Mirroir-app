@@ -189,6 +189,14 @@ public enum RemoteDisplayManager {
 		}
 	}
 	
+	public void registerVideoPlayerCallback(IPrezCallbacks cb){
+		if(mCurenntPresentation != null){
+			if(mCurenntPresentation.getName().equals(Utils.videoPresentationName)){
+				mCurenntPresentation.setListener(cb);
+			}
+		}
+	}
+	
 	public void shutDown(){
 		if(mMediaRouter != null){
 			if(mLocalRoute != mCurrentRouteSelected)
@@ -351,6 +359,15 @@ public enum RemoteDisplayManager {
 		}
 	}
 	
+	public void seekToAudioPlayer(int pos){
+		if(mCurenntPresentation != null){
+			if(mCurenntPresentation.getName().equals(Utils.musicPresentationName)){
+				AudioPlayerPrez prez = (AudioPlayerPrez)mCurenntPresentation;
+				prez.seekTo(pos);
+			}
+		}
+	}
+	
 	/**
 	 * 
 	 * VIDEO PLAYER PRESENTATION CONTROLS HOOKS
@@ -379,6 +396,15 @@ public enum RemoteDisplayManager {
 			if(mCurenntPresentation.getName().equals(Utils.videoPresentationName)){
 				VideoPlayerPrez prez = (VideoPlayerPrez)mCurenntPresentation;
 				prez.stopVideoPlayer();
+			}
+		}
+	}
+	
+	public void seekToVideoPlayer(int pos){
+		if(mCurenntPresentation != null){
+			if(mCurenntPresentation.getName().equals(Utils.videoPresentationName)){
+				VideoPlayerPrez prez = (VideoPlayerPrez)mCurenntPresentation;
+				prez.seekTo(pos);
 			}
 		}
 	}

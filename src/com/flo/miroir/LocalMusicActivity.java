@@ -1,17 +1,11 @@
 package com.flo.miroir;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -25,14 +19,13 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-public class LocalMusicActivity extends Activity implements IPrezCallbacks{
+public class LocalMusicActivity extends Activity implements IPrezCallbacks, SeekBar.OnSeekBarChangeListener {
 
 	private final String TAG = this.getClass().getName();
 	
@@ -57,11 +50,11 @@ public class LocalMusicActivity extends Activity implements IPrezCallbacks{
 	
 	private int mCurrentPosInList = -1;
 	private boolean mIsPaused = false;
+	private boolean mUpdateSeekBar = true;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
         
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_local_music);
@@ -131,8 +124,10 @@ public class LocalMusicActivity extends Activity implements IPrezCallbacks{
 	     * Create and set the adapter for the ListView.
 	     * 
 	     */
-	    private void initUI(){
+    private void initUI(){
 	    	mListView.setOnItemClickListener(mListItemClickListener);
+	    	
+	    	mPcvProgressBar.setOnSeekBarChangeListener(this);
 	    	
 	    	mPcvPlayButton.setOnClickListener(new OnClickListener() {
 				@Override
@@ -178,6 +173,7 @@ public class LocalMusicActivity extends Activity implements IPrezCallbacks{
 			});*/
 	    	
 	    	mPlaybakControlView.setVisibility(View.GONE);
+	    	mPlaybakControlViewBottom.setVisibility(View.GONE);
 
 	    	mAudioAdapter = new ContentRowAdapter(getApplicationContext());
 	    	mListView.setAdapter(mAudioAdapter);
@@ -255,7 +251,7 @@ public class LocalMusicActivity extends Activity implements IPrezCallbacks{
 	    		MediaStore.Audio.Albums._ID,
 	    		MediaStore.Audio.Albums.ALBUM_ART
 	    		};
-
+		
 		private ContentDetails collectLocalAudioMediaInfo() {
 			ContentDetails info = new ContentDetails(mCursorAudioStore.getString(mCursorAudioStore.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)));
     		
@@ -288,7 +284,7 @@ public class LocalMusicActivity extends Activity implements IPrezCallbacks{
               
               if(uri != null ){    
             	  //info.setThumbnail(BitmapFactory.decodeFile(uri));
-            	  info.setThumbnail(Utils.decodeSampledBitmapFromUri(uri, 48, 48));
+            	  info.setThumbnail(Utils.decodeSampledBitmapFromUri(uri, 80, 80));
             	  Log.v(TAG, "AA: " + uri);
               }
             } 
@@ -405,7 +401,7 @@ public class LocalMusicActivity extends Activity implements IPrezCallbacks{
 	public void onProgressChanged(int value) {
 		Log.e(TAG, "onProgressChanged: " + value);
 		
-		if(mPcvProgressBar.getProgress() != value){
+		if(mPcvProgressBar.getProgress() != value && mUpdateSeekBar){
 			mPcvProgressBar.setProgress(value);
 		}
 	}
@@ -413,6 +409,27 @@ public class LocalMusicActivity extends Activity implements IPrezCallbacks{
 	@Override
 	public void onPlaybackCompleted() {
 		Log.e(TAG, "onPlaybackCompleted");
+		//set UI in correct state
+		mPcvPlayButton.setImageDrawable(getResources().getDrawable( R.drawable.play_light));
+		mIsPaused = true;
+		
 		playNext();
+	}
+
+	@Override
+	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+	}
+
+	@Override
+	public void onStartTrackingTouch(SeekBar seekBar) {
+		//stop updating the progress bar since the user is now moving it
+		mUpdateSeekBar = false;
+	}
+
+	@Override
+	public void onStopTrackingTouch(SeekBar seekBar) {
+		RemoteDisplayManager.INSTANCE.seekToAudioPlayer(seekBar.getProgress());
+		//keep updating the seek bar
+		mUpdateSeekBar = true;
 	}
 }

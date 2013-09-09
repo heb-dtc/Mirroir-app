@@ -53,7 +53,7 @@ public class AudioPlayerPrez extends RemotePresentation implements OnCompletionL
 		Log.e(TAG, "onDisplayRemoved");
 		
 		//mandatory clean up before exiting
-		stopRadio();
+		stopPlayer();
 		mPlayer.release();
 	}
 	
@@ -76,8 +76,10 @@ public class AudioPlayerPrez extends RemotePresentation implements OnCompletionL
             int progress = (int)(Utils.getProgressPercentage(currentDuration, totalDuration));
             getListener().onProgressChanged(progress);
             
-            // Running this thread after 100 milliseconds
-            mHandler.postDelayed(this, 100);
+            if(mPlayer.isPlaying()){
+	            // Running this thread after 100 milliseconds
+	            mHandler.postDelayed(this, 100);
+            }
         }
      };
 	
@@ -111,13 +113,15 @@ public class AudioPlayerPrez extends RemotePresentation implements OnCompletionL
     	}
     }
 	
-	private void resumeRadio(){
+	private void resumePlayer(){
     	if(mPlayer != null && !mPlayer.isPlaying()){
     			mPlayer.start();
+    			//restart update thread
+    			updateProgressBar();
     	}
     }
 	
-	private void pauseRadio(){
+	private void pausePlayer(){
     	if(mPlayer != null){
     		if(mPlayer.isPlaying()){
     			mPlayer.pause();
@@ -125,11 +129,21 @@ public class AudioPlayerPrez extends RemotePresentation implements OnCompletionL
     	}
     }
 	
-	private void stopRadio(){
+	private void stopPlayer(){
     	if(mPlayer != null){
     		if(mPlayer.isPlaying()){
     			mHandler.removeCallbacks(mUpdateTimeTask);
     			mPlayer.stop();
+    		}
+    	}
+    }
+	
+	private void seekToPlayer(int pos){
+    	if(mPlayer != null){
+    		if(mPlayer.isPlaying()){
+    			int totalDuration = mPlayer.getDuration();
+    	        int currentPosition = Utils.progressToTimer(pos, totalDuration);
+    			mPlayer.seekTo(currentPosition);
     		}
     	}
     }
@@ -142,28 +156,28 @@ public class AudioPlayerPrez extends RemotePresentation implements OnCompletionL
 	
 	public void startAudioPlayer(ContentDetails item){
 		mCurrentContent = item;
-		
-		//mPlayerAsyncTask = new PlayerAsyncTask();
-		//mPlayerAsyncTask.execute();
 		startRadio();
 	}
 	
 	public void pauseAudioPlayer(){
-		pauseRadio();
+		pausePlayer();
 	}
 	
 	public void resumeAudioPlayer(){
-		resumeRadio();
+		resumePlayer();
 	}
 	
 	public void stopAudioPlayer(){
-		stopRadio();
+		stopPlayer();
+	}
+	
+	public void seekTo(int position){
+		seekToPlayer(position);
 	}
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.d(TAG, "onCompletion");
 		getListener().onPlaybackCompleted();
-		//mHandler.removeCallbacks(mUpdateTimeTask);
 	}
 }
